@@ -1,56 +1,62 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { environment } from 'src/environments/environment';
+import { ApiService } from '../services/api';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonItem, IonLabel, IonInput, IonButton, IonText } from '@ionic/angular/standalone';
 
-// ✅ Import ALL used Ionic components
-import {
-  IonContent,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonItem,
-  IonInput,
-  IonButton,
-  IonLabel   // ✅ MISSING ONE (IMPORTANT)
-} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-
-    IonContent,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    IonItem,
-    IonInput,
-    IonButton,
-    IonLabel   // ✅ ADD THIS
-  ],
   templateUrl: './login.page.html',
-  styleUrls: ['./login.page.scss']
+  styleUrls: ['./login.page.scss'],
+  standalone: true,
+  imports: [IonContent,IonText,IonInput,IonItem,IonButton, CommonModule, FormsModule,ReactiveFormsModule]
 })
 export class LoginPage {
 
-  loginForm: FormGroup;
+  loginForm;
+  errormessage='';
+  private baseUrl = environment.baseUrl;
+  constructor(private fb: FormBuilder, private router: Router, private apiService: ApiService) {
 
-  constructor(private fb: FormBuilder, private router: Router) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      mobile: ['', [
+        Validators.required,
+        Validators.pattern('^[0-9]{10}$')
+      ]]
     });
+
   }
 
-  onLogin() {
-    if (this.loginForm.valid) {
-      console.log(this.loginForm.value);
-      this.router.navigate(['/home']);
+  sendOtp() {
+    this.errormessage = '';
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
     }
+  const payload = {
+    mobileNumber: this.loginForm.value.mobile,
+    userType: environment.userType
+  };
+    const mobile = this.loginForm.value.mobile;
+
+   this.apiService.post('auth/send-otp', payload).subscribe({
+    next: (res) => {
+    this.router.navigate(['/otp'], {
+      queryParams: { mobile }
+    });
+    },
+    error: (err) => {
+      this.errormessage = 'Failed to send OTP. Please try again.';
+    }
+  });
+    // 👉 Navigate to OTP page
+
+  }
+
+  goToRegister() {
+    this.router.navigate(['/register']);
   }
 }
