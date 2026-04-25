@@ -1,0 +1,41 @@
+<ion-content class="main-bg">
+
+  <div class="top-logo">
+    <img src="assets/VayGoLogo.png" />
+  </div>
+
+  <div class="card">
+
+    <h2>Confirm OTP</h2>
+    <p>Enter 6-digit code sent to {{ mobile }}</p>
+    <ion-button 
+  fill="clear" 
+  size="small" 
+  class="ion-text-center"
+  (click)="changeNumber()">
+  Change Number
+</ion-button>
+
+    <div style="display:flex; justify-content:space-between; margin-top:20px;">
+    <ion-input
+      *ngFor="let item of otp; let i = index"
+      maxlength="1"
+      type="tel"
+      style="width:40px; text-align:center; border:1px solid #ccc; border-radius:8px;"
+      (ionInput)="moveNext($event, i)">
+    </ion-input>
+  </div>
+  <!-- Error -->
+  <ion-text color="danger" *ngIf="errorMsg">
+    <p class="ion-text-center">{{ errorMsg }}</p>
+  </ion-text>
+
+    <ion-button expand="block" class="btn" (click)="verifyOtp()">
+      {{ loading ? 'Verifying...' : 'Verify & Continue' }}
+    </ion-button>
+
+        <p class="timer">Resend OTP in {{ timer }}s</p>
+
+  </div>
+
+</ion-content>

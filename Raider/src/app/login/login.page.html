@@ -1,33 +1,67 @@
-<ion-content class="ion-padding">
+<ion-content class="main-bg">
 
-  <ion-card>
+  <!-- TOP LOGO -->
+  <div class="top-logo">
+      <img src="assets/VayGoLogo.png" />
+  </div>
 
-    <ion-card-header>
-      <ion-card-title>Raider Login</ion-card-title>
-    </ion-card-header>
+  <!-- FLOATING CARD -->
+  <div class="card">
 
-    <ion-card-content>
+    <h2>Welcome</h2>
+    <p>Login with your mobile number</p>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+    <!-- FORM -->
+    <form [formGroup]="loginForm" (ngSubmit)="sendOtp()">
 
-        <ion-item>
-          <ion-label position="floating">Email</ion-label>
-          <ion-input type="email" formControlName="email"></ion-input>
-        </ion-item>
+  <ion-item fill="outline">
+    <ion-input
+      type="tel"
+      inputmode="numeric"
+      maxlength="10"
+      formControlName="mobile"
+      placeholder="Enter mobile number">
+    </ion-input>
+  </ion-item>
 
-        <ion-item>
-          <ion-label position="floating">Password</ion-label>
-          <ion-input type="password" formControlName="password"></ion-input>
-        </ion-item>
 
-        <ion-button expand="block" type="submit">
-          Login
-        </ion-button>
+      <!-- VALIDATION ERROR -->
+      <ion-text color="danger"
+        *ngIf="loginForm.get('mobile')?.touched && loginForm.get('mobile')?.invalid">
 
-      </form>
+        <p *ngIf="loginForm.get('mobile')?.errors?.['required']">
+          Mobile number is required
+        </p>
 
-    </ion-card-content>
+        <p *ngIf="loginForm.get('mobile')?.errors?.['pattern']">
+          Enter valid 10-digit number
+        </p>
 
-  </ion-card>
+      </ion-text>
+
+      <!-- BUTTON -->
+      <ion-button expand="block" class="btn" type="submit">
+        Send OTP
+      </ion-button>
+
+    </form>
+
+    <!-- REGISTER -->
+    <ion-button fill="clear" class="btn-link" (click)="goToRegister()">
+      Create New Account
+    </ion-button>
+      <ion-text color="danger"
+        *ngIf="loginForm.get('mobile')?.touched && loginForm.get('mobile')?.invalid">
+
+        <p *ngIf="loginForm.get('mobile')?.errors?.['required']">
+          Mobile number is required
+        </p>
+
+        <p *ngIf="loginForm.get('mobile')?.errors?.['pattern']">
+          Enter valid 10-digit number
+        </p>
+
+      </ion-text>
+  </div>
 
 </ion-content>
