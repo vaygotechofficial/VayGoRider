@@ -1,0 +1,63 @@
+<ion-content [scrollY]="true">
+
+  <div class="top-logo">
+    <img src="assets/VayGoLogoWhite.png" alt="VayGo" />
+  </div>
+
+  <div class="card">
+    <h2>Choose Your Plan</h2>
+    <p>Select a subscription to start riding</p>
+
+    <!-- STEP INDICATOR -->
+    <div class="stepper">
+      <div class="step completed">✓</div>
+      <div class="line done"></div>
+      <div class="step completed">✓</div>
+      <div class="line done"></div>
+      <div class="step completed">✓</div>
+      <div class="line done"></div>
+      <div class="step active">4</div>
+    </div>
+    <div class="step-label">Step 4 of 4 — Subscription Plan</div>
+
+    <!-- PLAN CARDS -->
+    <div class="plans">
+      <div
+        *ngFor="let plan of plans"
+        class="plan-card"
+        [class.selected]="selectedPlanId === plan.id"
+        (click)="selectPlan(plan.id)">
+
+        <div class="popular-badge" *ngIf="plan.popular">⭐ Most Popular</div>
+
+        <div class="plan-top">
+          <span class="plan-name">{{ plan.name }}</span>
+          <div class="plan-price">
+            <span class="amount">₹{{ plan.price }}</span>
+            <span class="period">/month</span>
+          </div>
+        </div>
+
+        <ul class="features">
+          <li *ngFor="let f of plan.features">
+            <span class="check">✓</span> {{ f }}
+          </li>
+        </ul>
+
+        <div class="selected-badge" *ngIf="selectedPlanId === plan.id">
+          ✔ Selected
+        </div>
+      </div>
+    </div>
+
+    <ion-text color="danger" *ngIf="errorMsg">
+      <p class="err-msg">{{ errorMsg }}</p>
+    </ion-text>
+
+    <ion-button expand="block" class="btn" (click)="proceed()">
+      Proceed to Payment
+    </ion-button>
+
+  </div>
+
+</ion-content>

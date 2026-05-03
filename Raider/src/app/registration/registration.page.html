@@ -1,0 +1,64 @@
+<ion-content>
+
+  <div class="top-logo">
+    <img src="assets/VayGoLogoWhite.png" alt="VayGo" />
+  </div>
+
+  <div class="card">
+    <h2>Create Account</h2>
+    <p>Register with your mobile number</p>
+
+    <div class="stepper">
+      <div class="step active">1</div>
+      <div class="line"></div>
+      <div class="step">2</div>
+      <div class="line"></div>
+      <div class="step">3</div>
+      <div class="line"></div>
+      <div class="step">4</div>
+    </div>
+    <div class="step-label">Step 1 of 4 — Personal Info</div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+      <ion-item fill="outline">
+        <ion-input
+          type="text"
+          formControlName="fullName"
+          placeholder="Enter your full name">
+        </ion-input>
+      </ion-item>
+      <ion-text color="danger"
+        *ngIf="registerForm.get('fullName')?.touched && registerForm.get('fullName')?.invalid">
+        <p *ngIf="registerForm.get('fullName')?.errors?.['required']">Full Name is required</p>
+        <p *ngIf="registerForm.get('fullName')?.errors?.['minlength']">Name must be at least 2 characters</p>
+      </ion-text>
+
+      <ion-item fill="outline" class="mt-10">
+        <ion-input
+          type="tel"
+          inputmode="numeric"
+          maxlength="10"
+          formControlName="mobileNumber"
+          placeholder="Enter 10-digit mobile number">
+        </ion-input>
+      </ion-item>
+      <ion-text color="danger"
+        *ngIf="registerForm.get('mobileNumber')?.touched && registerForm.get('mobileNumber')?.invalid">
+        <p *ngIf="registerForm.get('mobileNumber')?.errors?.['required']">Mobile number is required</p>
+        <p *ngIf="registerForm.get('mobileNumber')?.errors?.['pattern']">Enter valid 10-digit mobile number</p>
+      </ion-text>
+
+      <ion-button expand="block" class="btn" type="submit">
+        Continue
+      </ion-button>
+
+    </form>
+
+    <ion-button expand="block" class="btn-link" (click)="goToLogin()">
+      Already have an account? Login
+    </ion-button>
+
+  </div>
+
+</ion-content>

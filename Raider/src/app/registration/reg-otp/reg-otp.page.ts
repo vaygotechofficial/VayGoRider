@@ -1,37 +1,32 @@
 import { Component, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonContent, IonButton, IonText } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService } from '../services/api';
-import { environment } from 'src/environments/environment';
+
+const DUMMY_OTP = '123456';
 
 @Component({
-  selector: 'app-otp',
-  templateUrl: './otp.page.html',
-  styleUrls: ['./otp.page.scss'],
+  selector: 'app-reg-otp',
+  templateUrl: './reg-otp.page.html',
+  styleUrls: ['./reg-otp.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonContent, IonButton, IonText]
 })
-export class OtpPage {
+export class RegOtpPage {
   @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   // slots is readonly — *ngFor never re-renders, DOM inputs are never recreated
   readonly slots = [0, 1, 2, 3, 4, 5];
   private digits: string[] = ['', '', '', '', '', ''];
 
-  timer = 30;
   errorMsg = '';
-  mobile = '';
-  loading = false;
+  step = 1;
+  timer = 30;
   private timerRef: any;
 
-  constructor(
-    private route: ActivatedRoute,
-    private apiService: ApiService,
-    private router: Router
-  ) {
+  constructor(private route: ActivatedRoute, private router: Router) {
     this.route.queryParams.subscribe(params => {
-      this.mobile = params['mobile'];
+      this.step = +params['step'] || 1;
     });
     this.startTimer();
   }
@@ -47,6 +42,7 @@ export class OtpPage {
     }
 
     const digit = raw[0];
+    // Write directly to the DOM — no Angular binding to trigger re-render
     input.value = digit;
     this.digits[index] = digit;
 
@@ -70,41 +66,19 @@ export class OtpPage {
     }
   }
 
-  changeNumber() {
-    this.router.navigate(['/login']);
-  }
-
   verifyOtp() {
-    const enteredOtp = this.digits.join('');
-    if (enteredOtp.length < 6) {
-      this.errorMsg = 'Enter complete OTP';
+    const entered = this.digits.join('');
+    if (entered.length < 6) {
+      this.errorMsg = 'Please enter the complete 6-digit OTP';
       return;
     }
-
+    if (entered !== DUMMY_OTP) {
+      this.errorMsg = `Invalid OTP. Enter ${DUMMY_OTP} to continue.`;
+      return;
+    }
     this.errorMsg = '';
-    this.loading = true;
-
-    const payload = {
-      mobileNumber: this.mobile,
-      otpCode: enteredOtp,
-      userType: environment.userType
-    };
-
-    this.apiService.post('auth/verify-otp', payload).subscribe({
-      next: (res: any) => {
-        this.loading = false;
-        if (res && (res.success || res.status === 200)) {
-          if (res.token) localStorage.setItem('token', res.token);
-          this.router.navigate(['/home']);
-        } else {
-          this.errorMsg = 'Invalid OTP';
-        }
-      },
-      error: (err) => {
-        this.loading = false;
-        this.errorMsg = err?.error?.message || 'OTP verification failed';
-      }
-    });
+    clearInterval(this.timerRef);
+    this.router.navigate([this.step === 1 ? '/registration/step2' : '/registration/step3']);
   }
 
   resendOtp() {
@@ -116,7 +90,7 @@ export class OtpPage {
     this.startTimer();
   }
 
-  startTimer() {
+  private startTimer() {
     clearInterval(this.timerRef);
     this.timerRef = setInterval(() => {
       if (this.timer > 0) this.timer--;
