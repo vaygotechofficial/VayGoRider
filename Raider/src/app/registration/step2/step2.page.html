@@ -1,0 +1,46 @@
+<ion-content>
+
+  <div class="top-logo">
+    <img src="assets/VayGoLogoWhite.png" alt="VayGo" />
+  </div>
+
+  <div class="card">
+    <h2>Aadhaar Verification</h2>
+    <p>Enter your 12-digit Aadhaar number</p>
+
+    <div class="stepper">
+      <div class="step completed">✓</div>
+      <div class="line done"></div>
+      <div class="step active">2</div>
+      <div class="line"></div>
+      <div class="step">3</div>
+      <div class="line"></div>
+      <div class="step">4</div>
+    </div>
+    <div class="step-label">Step 2 of 4 — Aadhaar Verification</div>
+
+    <form [formGroup]="aadhaarForm" (ngSubmit)="onSubmit()">
+
+      <ion-item fill="outline">
+        <ion-input
+          type="tel"
+          inputmode="numeric"
+          maxlength="12"
+          formControlName="aadhaarNumber"
+          placeholder="Enter 12-digit Aadhaar number">
+        </ion-input>
+      </ion-item>
+      <ion-text color="danger"
+        *ngIf="aadhaarForm.get('aadhaarNumber')?.touched && aadhaarForm.get('aadhaarNumber')?.invalid">
+        <p *ngIf="aadhaarForm.get('aadhaarNumber')?.errors?.['required']">Aadhaar number is required</p>
+        <p *ngIf="aadhaarForm.get('aadhaarNumber')?.errors?.['pattern']">Enter valid 12-digit Aadhaar number</p>
+      </ion-text>
+
+      <ion-button expand="block" class="btn" type="submit">
+        Send OTP
+      </ion-button>
+
+    </form>
+  </div>
+
+</ion-content>

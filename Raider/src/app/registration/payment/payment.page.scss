@@ -1,0 +1,218 @@
+ion-content {
+  --background: linear-gradient(180deg, #3b0a18, #1a050b);
+}
+
+.top-logo {
+  text-align: center;
+  padding-top: 30px;
+}
+
+.top-logo img {
+  width: 50%;
+  max-width: 160px;
+}
+
+.card {
+  margin-top: 110px;
+  background: #ffffff;
+  border-top-left-radius: 35px;
+  border-top-right-radius: 35px;
+  padding: 28px 20px 40px;
+  text-align: center;
+  min-height: calc(100vh - 110px);
+}
+
+.card h2 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+/* PLAN SUMMARY BAR */
+.plan-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #8b1c2c, #3b0a18);
+  color: #fff;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.summary-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.summary-sub {
+  display: block;
+  font-size: 11px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.summary-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.amount {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.period {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* PAYMENT METHOD TABS */
+.method-tabs {
+  display: flex;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f9f9f9;
+  color: #666;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #8b1c2c, #3b0a18);
+  color: #fff;
+}
+
+/* METHOD BODY */
+.method-body {
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+/* UPI ICONS */
+.upi-icons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.upi-tag {
+  background: #f3f3f3;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+}
+
+.input-item {
+  margin-bottom: 4px;
+}
+
+/* NATIVE INPUTS (card number, expiry) */
+.field-wrap {
+  margin-bottom: 12px;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.native-input {
+  width: 100%;
+  height: 48px;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 15px;
+  color: #333;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.native-input:focus {
+  border-color: #8b1c2c;
+  box-shadow: 0 0 0 2px rgba(139,28,44,0.12);
+}
+
+/* EXPIRY + CVV row */
+.row-fields {
+  display: flex;
+  gap: 12px;
+}
+
+.half {
+  flex: 1;
+}
+
+/* NET BANKING */
+.nb-label {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.bank-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bank-item {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  background: #fafafa;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: left;
+}
+
+.bank-item.selected {
+  border-color: #8b1c2c;
+  background: #fff5f5;
+  color: #8b1c2c;
+  font-weight: 600;
+}
+
+.err {
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.btn {
+  --background: linear-gradient(135deg, #8b1c2c, #3b0a18);
+  --color: #fff;
+  --border-radius: 12px;
+  margin-top: 20px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.secure-note {
+  font-size: 12px;
+  color: #999;
+  margin-top: 12px;
+  text-align: center;
+}

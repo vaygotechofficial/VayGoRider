@@ -5,13 +5,10 @@
   </div>
 
   <div class="card">
-
-    <h2>Confirm OTP</h2>
-    <p>Enter 6-digit code sent to {{ mobile }}</p>
-
-    <ion-button expand="block" size="small" class="btn-change" (click)="changeNumber()">
-      Change Number
-    </ion-button>
+    <h2>Verify OTP</h2>
+    <p *ngIf="step === 1">Verifying your mobile number</p>
+    <p *ngIf="step === 2">Verifying your Aadhaar</p>
+    <p class="hint">Enter dummy OTP: <strong>123456</strong></p>
 
     <div class="otp-row">
       <input
@@ -29,20 +26,19 @@
     </div>
 
     <ion-text color="danger" *ngIf="errorMsg">
-      <p class="ion-text-center">{{ errorMsg }}</p>
+      <p class="err-msg">{{ errorMsg }}</p>
     </ion-text>
 
     <ion-button expand="block" class="btn" (click)="verifyOtp()">
-      {{ loading ? 'Verifying...' : 'Verify & Continue' }}
+      Verify & Continue
     </ion-button>
 
-    <div class="timer">
-      <span *ngIf="timer > 0">Resend OTP in {{ timer }}s</span>
-      <ion-button *ngIf="timer === 0" expand="block" class="btn-resend" (click)="resendOtp()">
+    <div class="timer-row">
+      <span *ngIf="timer > 0" class="timer-text">Resend OTP in {{ timer }}s</span>
+      <ion-button *ngIf="timer === 0" expand="block" class="resend-btn" (click)="resendOtp()">
         Resend OTP
       </ion-button>
     </div>
-
   </div>
 
 </ion-content>

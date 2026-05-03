@@ -1,0 +1,88 @@
+<ion-content [scrollY]="true">
+
+  <div class="top-logo">
+    <img src="assets/VayGoLogoWhite.png" alt="VayGo" />
+  </div>
+
+  <div class="card">
+    <h2>Upload Documents</h2>
+    <p>Take your photo and upload required documents</p>
+
+    <div class="stepper">
+      <div class="step completed">✓</div>
+      <div class="line done"></div>
+      <div class="step completed">✓</div>
+      <div class="line done"></div>
+      <div class="step active">3</div>
+      <div class="line"></div>
+      <div class="step">4</div>
+    </div>
+    <div class="step-label">Step 3 of 4 — Upload Documents</div>
+
+    <!-- PROFILE PHOTO (Camera) -->
+    <div class="upload-section">
+      <p class="upload-label">Profile Photo <span class="required">*</span></p>
+      <div class="camera-box" (click)="takePhoto()">
+        <img *ngIf="photoPreview" [src]="photoPreview" class="preview-img" />
+        <div *ngIf="!photoPreview" class="camera-placeholder">
+          <span class="camera-icon">📷</span>
+          <span class="camera-text">Tap to open camera</span>
+          <span class="camera-hint">Take a clear front-facing photo</span>
+        </div>
+      </div>
+      <ion-button *ngIf="photoPreview" expand="block" class="retake-btn" (click)="takePhoto()">
+        Retake Photo
+      </ion-button>
+    </div>
+
+    <!-- DRIVING LICENCE UPLOAD -->
+    <div class="upload-section">
+      <p class="upload-label">Driving Licence <span class="required">*</span></p>
+      <div class="upload-box" (click)="licenceInput.click()" [class.has-file]="!!licence">
+        <img *ngIf="licencePreview && licenceIsImage" [src]="licencePreview" class="preview-img" />
+        <div *ngIf="!licence" class="upload-placeholder">
+          <span class="upload-icon">🪪</span>
+          <span class="upload-text">Tap to upload licence</span>
+          <span class="upload-hint">JPG, PNG, or PDF</span>
+        </div>
+        <div *ngIf="licence && !licenceIsImage" class="file-info">
+          <span class="file-icon">📄</span>
+          <span class="file-name">{{ licence.name }}</span>
+        </div>
+      </div>
+      <input #licenceInput type="file" hidden
+        accept="image/jpeg,image/png,image/jpg,application/pdf"
+        (change)="onFileSelect($event, 'licence')" />
+    </div>
+
+    <!-- INSURANCE UPLOAD -->
+    <div class="upload-section">
+      <p class="upload-label">Insurance Document <span class="required">*</span></p>
+      <div class="upload-box" (click)="insuranceInput.click()" [class.has-file]="!!insurance">
+        <img *ngIf="insurancePreview && insuranceIsImage" [src]="insurancePreview" class="preview-img" />
+        <div *ngIf="!insurance" class="upload-placeholder">
+          <span class="upload-icon">📑</span>
+          <span class="upload-text">Tap to upload insurance</span>
+          <span class="upload-hint">JPG, PNG, or PDF</span>
+        </div>
+        <div *ngIf="insurance && !insuranceIsImage" class="file-info">
+          <span class="file-icon">📄</span>
+          <span class="file-name">{{ insurance.name }}</span>
+        </div>
+      </div>
+      <input #insuranceInput type="file" hidden
+        accept="image/jpeg,image/png,image/jpg,application/pdf"
+        (change)="onFileSelect($event, 'insurance')" />
+    </div>
+
+    <ion-text color="danger" *ngIf="errorMsg">
+      <p class="err-msg">{{ errorMsg }}</p>
+    </ion-text>
+
+    <ion-button expand="block" class="btn" (click)="onSubmit()" [disabled]="loading">
+      {{ loading ? 'Submitting...' : 'Complete Registration' }}
+    </ion-button>
+
+  </div>
+
+</ion-content>

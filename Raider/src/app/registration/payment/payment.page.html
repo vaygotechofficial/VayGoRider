@@ -1,0 +1,159 @@
+<ion-content [scrollY]="true">
+
+  <div class="top-logo">
+    <img src="assets/VayGoLogoWhite.png" alt="VayGo" />
+  </div>
+
+  <div class="card">
+    <h2>Complete Payment</h2>
+
+    <!-- PLAN SUMMARY -->
+    <div class="plan-summary">
+      <div class="summary-left">
+        <span class="summary-label">{{ planName }} Plan</span>
+        <span class="summary-sub">Monthly subscription</span>
+      </div>
+      <div class="summary-amount">
+        <span class="amount">₹{{ amount }}</span>
+        <span class="period">/mo</span>
+      </div>
+    </div>
+
+    <!-- PAYMENT METHOD TABS -->
+    <div class="method-tabs">
+      <button class="tab-btn" [class.active]="method === 'upi'" (click)="setMethod('upi')">
+        UPI
+      </button>
+      <button class="tab-btn" [class.active]="method === 'card'" (click)="setMethod('card')">
+        Card
+      </button>
+      <button class="tab-btn" [class.active]="method === 'netbanking'" (click)="setMethod('netbanking')">
+        Net Banking
+      </button>
+    </div>
+
+    <!-- UPI -->
+    <div *ngIf="method === 'upi'" class="method-body">
+      <div class="upi-icons">
+        <span class="upi-tag">GPay</span>
+        <span class="upi-tag">PhonePe</span>
+        <span class="upi-tag">Paytm</span>
+        <span class="upi-tag">BHIM</span>
+      </div>
+      <form [formGroup]="upiForm">
+        <ion-item fill="outline" class="input-item">
+          <ion-input
+            type="text"
+            formControlName="upiId"
+            placeholder="Enter UPI ID  (e.g. name@okaxis)">
+          </ion-input>
+        </ion-item>
+        <ion-text color="danger"
+          *ngIf="upiForm.get('upiId')?.touched && upiForm.get('upiId')?.invalid">
+          <p class="err" *ngIf="upiForm.get('upiId')?.errors?.['required']">UPI ID is required</p>
+          <p class="err" *ngIf="upiForm.get('upiId')?.errors?.['pattern']">Enter valid UPI ID (e.g. name@okaxis)</p>
+        </ion-text>
+      </form>
+    </div>
+
+    <!-- CARD -->
+    <div *ngIf="method === 'card'" class="method-body">
+      <form [formGroup]="cardForm">
+        <!-- Card Number -->
+        <div class="field-wrap">
+          <label class="field-label">Card Number</label>
+          <input
+            class="native-input"
+            type="tel"
+            inputmode="numeric"
+            maxlength="19"
+            placeholder="XXXX XXXX XXXX XXXX"
+            (input)="formatCardNumber($event)"
+          />
+          <ion-text color="danger"
+            *ngIf="cardForm.get('cardNumber')?.touched && cardForm.get('cardNumber')?.errors?.['required']">
+            <p class="err">Card number is required</p>
+          </ion-text>
+          <ion-text color="danger"
+            *ngIf="cardForm.get('cardNumber')?.touched && cardForm.get('cardNumber')?.errors?.['pattern']">
+            <p class="err">Enter valid 16-digit card number</p>
+          </ion-text>
+        </div>
+
+        <!-- Cardholder Name -->
+        <div class="field-wrap">
+          <label class="field-label">Name on Card</label>
+          <ion-item fill="outline" class="input-item">
+            <ion-input
+              type="text"
+              formControlName="cardName"
+              placeholder="Full name as on card">
+            </ion-input>
+          </ion-item>
+          <ion-text color="danger"
+            *ngIf="cardForm.get('cardName')?.touched && cardForm.get('cardName')?.invalid">
+            <p class="err">Cardholder name is required</p>
+          </ion-text>
+        </div>
+
+        <!-- Expiry + CVV -->
+        <div class="row-fields">
+          <div class="half">
+            <label class="field-label">Expiry (MM/YY)</label>
+            <input
+              class="native-input"
+              type="tel"
+              inputmode="numeric"
+              maxlength="5"
+              placeholder="MM/YY"
+              (input)="formatExpiry($event)"
+            />
+            <ion-text color="danger"
+              *ngIf="cardForm.get('expiry')?.touched && cardForm.get('expiry')?.invalid">
+              <p class="err">Invalid expiry</p>
+            </ion-text>
+          </div>
+          <div class="half">
+            <label class="field-label">CVV</label>
+            <ion-item fill="outline" class="input-item">
+              <ion-input
+                type="tel"
+                inputmode="numeric"
+                maxlength="4"
+                formControlName="cvv"
+                placeholder="CVV">
+              </ion-input>
+            </ion-item>
+            <ion-text color="danger"
+              *ngIf="cardForm.get('cvv')?.touched && cardForm.get('cvv')?.invalid">
+              <p class="err">Invalid CVV</p>
+            </ion-text>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- NET BANKING -->
+    <div *ngIf="method === 'netbanking'" class="method-body">
+      <p class="nb-label">Select your bank</p>
+      <div class="bank-grid">
+        <div
+          *ngFor="let bank of banks"
+          class="bank-item"
+          [class.selected]="selectedBank === bank"
+          (click)="selectedBank = bank">
+          {{ bank }}
+        </div>
+      </div>
+    </div>
+
+    <!-- PAY BUTTON -->
+    <ion-button expand="block" class="btn" (click)="pay()" [disabled]="loading">
+      {{ loading ? 'Processing Payment...' : 'Pay ₹' + amount }}
+    </ion-button>
+
+    <p class="secure-note">🔒 100% Secure & Encrypted Payment</p>
+
+  </div>
+
+</ion-content>

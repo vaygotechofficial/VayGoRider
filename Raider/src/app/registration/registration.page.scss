@@ -12,6 +12,52 @@ ion-content {
   max-width: 160px;
 }
 
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0 10px;
+}
+
+.step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ddd;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.step.active {
+  background: #8b1c2c;
+  color: #fff;
+}
+
+.step.completed {
+  background: #4caf50;
+  color: #fff;
+}
+
+.line {
+  width: 24px;
+  height: 2px;
+  background: #ddd;
+}
+
+.line.done {
+  background: #4caf50;
+}
+
+.step-label {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
 .card {
   position: absolute;
   bottom: 0;
@@ -20,13 +66,11 @@ ion-content {
   border-top-left-radius: 35px;
   border-top-right-radius: 35px;
   padding: 30px 20px;
-  box-shadow: 0px -10px 30px rgba(0,0,0,0.4);
   text-align: center;
 }
 
 .card h2 {
   font-size: 22px;
-  color: #1a050b;
 }
 
 .card p {
@@ -35,12 +79,15 @@ ion-content {
   margin-bottom: 20px;
 }
 
+.mt-10 {
+  margin-top: 10px;
+}
+
 .btn {
   --background: linear-gradient(135deg, #8b1c2c, #3b0a18);
   --color: #fff;
   --border-radius: 12px;
-  font-weight: bold;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
 .btn-link {
