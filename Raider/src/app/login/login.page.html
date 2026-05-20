@@ -9,7 +9,7 @@
     <h2>Welcome</h2>
     <p>Login with your mobile number</p>
 
-    <form [formGroup]="loginForm" (ngSubmit)="sendOtp()">
+    <form [formGroup]="loginForm" (ngSubmit)="login()">
 
       <ion-item fill="outline">
         <ion-input
@@ -28,7 +28,7 @@
       </ion-text>
 
       <ion-button expand="block" class="btn" type="submit">
-        Send OTP
+        Login
       </ion-button>
 
     </form>

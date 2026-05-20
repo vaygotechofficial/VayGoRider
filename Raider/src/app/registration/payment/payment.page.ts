@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { IonContent, IonButton, IonText, IonItem, IonInput } from '@ionic/angular/standalone';
+import { IonContent, IonButton } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RegistrationStateService } from '../registration-state.service';
 
@@ -10,49 +9,82 @@ import { RegistrationStateService } from '../registration-state.service';
   templateUrl: './payment.page.html',
   styleUrls: ['./payment.page.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonContent, IonButton, IonText, IonItem, IonInput]
+  imports: [CommonModule, IonContent, IonButton]
 })
 export class PaymentPage {
-  planName = 'Basic';
-  amount = 199;
-  upiForm: FormGroup;
+  planName = 'VayGo Rider';
+  amount = 599;
+  paymentDone = false;
+
+  private readonly merchantUpi = 'vaygo@ybl';
 
   constructor(
-    private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private regState: RegistrationStateService
   ) {
     this.route.queryParams.subscribe(p => {
-      this.planName = p['planName'] || 'Basic';
-      this.amount = +p['amount'] || 199;
-    });
-
-    this.upiForm = this.fb.group({
-      upiId: ['', [
-        Validators.required,
-        Validators.pattern('^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$')
-      ]]
+      this.planName = p['planName'] || 'VayGo Rider';
+      this.amount = +p['amount'] || 599;
     });
   }
 
-  payWithPhonePe() {
-    if (this.upiForm.invalid) {
-      this.upiForm.markAllAsTouched();
-      return;
-    }
-
-    const upiId = this.upiForm.value.upiId;
+  openPhonePe() {
     const name = encodeURIComponent('VayGo');
     const note = encodeURIComponent('VayGo Rider Subscription');
+    const phonePeUrl = `phonepe://pay?pa=${this.merchantUpi}&pn=${name}&am=${this.amount}&cu=INR&tn=${note}`;
+    const gpayUrl = `tez://upi/pay?pa=${this.merchantUpi}&pn=${name}&am=${this.amount}&cu=INR&tn=${note}`;
 
-    // PhonePe deep link — opens PhonePe with payment details pre-filled
-    const phonePeUrl =
-      `phonepe://pay?pa=${upiId}&pn=${name}&am=${this.amount}&cu=INR&tn=${note}`;
+    let appLaunched = false;
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        appLaunched = true;
+      } else if (appLaunched) {
+        // User returned from payment app
+        document.removeEventListener('visibilitychange', onVisibility);
+        this.onPaymentComplete();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
 
     window.open(phonePeUrl, '_system');
 
-    // Clear registration state; user completes payment inside PhonePe
+    // If PhonePe not installed after 1.5s, fall back to Google Pay
+    setTimeout(() => {
+      if (!appLaunched) {
+        document.removeEventListener('visibilitychange', onVisibility);
+        this.launchApp(gpayUrl);
+      }
+    }, 1500);
+  }
+
+  openGooglePay() {
+    const name = encodeURIComponent('VayGo');
+    const note = encodeURIComponent('VayGo Rider Subscription');
+    this.launchApp(
+      `tez://upi/pay?pa=${this.merchantUpi}&pn=${name}&am=${this.amount}&cu=INR&tn=${note}`
+    );
+  }
+
+  private launchApp(url: string) {
+    let appLaunched = false;
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        appLaunched = true;
+      } else if (appLaunched) {
+        document.removeEventListener('visibilitychange', onVisibility);
+        this.onPaymentComplete();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.open(url, '_system');
+  }
+
+  private onPaymentComplete() {
     this.regState.reset();
+    this.paymentDone = true;
+    setTimeout(() => this.router.navigate(['/login']), 2500);
   }
 }

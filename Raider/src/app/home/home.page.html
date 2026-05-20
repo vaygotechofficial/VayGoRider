@@ -1,27 +1,110 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [scrollY]="false">
+  <div class="screen">
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <!-- HEADER -->
+    <div class="header">
+      <img src="assets/VayGoLogoWhite.png" class="header-logo" alt="VayGo" />
+      <div class="header-right">
+        <div class="toggle-wrap" (click)="toggleStatus()">
+          <span class="toggle-label" [class.online]="isOnline">
+            {{ isOnline ? 'Online' : 'Offline' }}
+          </span>
+          <div class="toggle-switch" [class.online]="isOnline">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+        <div class="avatar">{{ riderName[0] }}</div>
+      </div>
+    </div>
 
-<ion-item>
-  <ion-input type="text" placeholder="Text input"></ion-input>
-</ion-item>
+    <!-- GREETING -->
+    <div class="greeting">
+      <p class="greet-sub">{{ greeting }}</p>
+      <h2 class="greet-name">Hey, {{ riderName }}</h2>
+    </div>
 
-<ion-item>
-  <ion-input type="tel" placeholder="Phone input"></ion-input>
-</ion-item>
+    <!-- MAP AREA -->
+    <div class="map-area">
+      <div id="map"></div>
 
-<ion-item>
-  <ion-input type="number" placeholder="Number input"></ion-input>
-</ion-item>
+      <!-- EARN BANNER -->
+      <div class="earn-banner">
+        <img src="assets/VayGoIcon.png" class="earn-logo" alt="VayGo" />
+        <div class="earn-text">
+          <p>Today extra earn</p>
+          <h3>₹ 20 per order</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER CARD -->
+    <div class="order-card" *ngIf="pendingOrder">
+      <div class="order-top">
+        <span class="order-label">Order assign</span>
+        <div class="countdown" [class.urgent]="countdown <= 5">
+          <svg class="countdown-ring" viewBox="0 0 36 36">
+            <circle class="ring-bg" cx="18" cy="18" r="15"/>
+            <circle class="ring-fill" cx="18" cy="18" r="15"
+              [style.stroke-dashoffset]="94.2 - (94.2 * countdown / 10)"/>
+          </svg>
+          <span class="countdown-num">{{ countdown }}</span>
+        </div>
+      </div>
+      <div class="order-row">
+        <div class="order-info">
+          <div class="restaurant-name">
+            {{ pendingOrder.restaurant }}
+            <span class="star">⭐ {{ pendingOrder.rating }}</span>
+          </div>
+          <div class="order-addr">{{ pendingOrder.address }}</div>
+          <div class="order-dist">📍 {{ pendingOrder.distance }}</div>
+        </div>
+        <div class="order-price-col">
+          <span class="price">₹{{ pendingOrder.price }}</span>
+          <span class="tip">tip ₹{{ pendingOrder.tip }}</span>
+        </div>
+      </div>
+      <div class="swipe-row">
+        <button class="accept-btn" (click)="acceptOrder()">
+          <span class="arrow">→</span>
+        </button>
+        <span class="swipe-label">Swipe to accept</span>
+      </div>
+      <button class="cancel-link" (click)="cancelOrder()">Cancel order</button>
+    </div>
+
+    <!-- OFFLINE PROMPT -->
+    <div class="offline-card" *ngIf="!isOnline">
+      <p class="offline-msg">You are <strong>Offline</strong></p>
+      <p class="offline-sub">Tap the toggle to go online and receive orders</p>
+      <button class="go-online-btn" (click)="toggleStatus()">Go Online</button>
+    </div>
+
+    <!-- WAITING CARD -->
+    <div class="waiting-card" *ngIf="isOnline && !pendingOrder">
+      <div class="pulse-dot"></div>
+      <p class="waiting-msg">Looking for orders…</p>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+      <button class="nav-item" [class.active]="activeTab==='home'" (click)="setTab('home')">
+        <img src="assets/VayGoLogoWhite.png" class="nav-logo" alt="Home" />
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab==='earning'" (click)="setTab('earning')">
+        <span class="nav-svg">₹</span>
+        <span class="nav-label">Earning</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab==='notification'" (click)="setTab('notification')">
+        <span class="nav-svg">&#128276;</span>
+        <span class="nav-label">Alerts</span>
+      </button>
+      <button class="nav-item" (click)="logout()">
+        <span class="nav-svg">&#10148;</span>
+        <span class="nav-label">Logout</span>
+      </button>
+    </div>
+
+  </div>
 </ion-content>
