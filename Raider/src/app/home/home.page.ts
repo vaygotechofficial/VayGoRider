@@ -1,20 +1,25 @@
-import { Component, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
+import { Subscription } from 'rxjs';
+import { ApiService } from '../services/api';
+import { SignalrService } from '../services/signalr';
 
-interface Order {
-  id: string;
-  restaurant: string;
-  address: string;
-  price: number;
-  tip: number;
-  rating: number;
-  distance: string;
-}
+const ACCEPT_TIMEOUT = 25; // seconds, mirrors RideService.AcceptWindowSeconds
 
-const ORDER_TIMEOUT = 10;
+const VEHICLE_ICONS: Record<string, string> = {
+  'Bike EV': '⚡',
+  'Scooter': '🛵',
+  'Motor Bike': '🏍️',
+  'Car Mini': '🚗',
+  'Car Sedan': '🚘',
+  'Car SUV': '🚙',
+  'Car Prime': '🚖',
+  'Car XL': '🚐',
+  'Auto': '🛺'
+};
 
 @Component({
   selector: 'app-home',
@@ -23,42 +28,55 @@ const ORDER_TIMEOUT = 10;
   standalone: true,
   imports: [CommonModule, IonContent]
 })
-export class HomePage implements AfterViewInit, OnDestroy {
+export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   isOnline = false;
-  riderName = 'Durgaprasad';
+  riderName = 'Driver';
+  vehicleType = '';
+  vehicleNumber = '';
   activeTab = 'home';
 
-  pendingOrder: Order | null = null;
-  countdown = ORDER_TIMEOUT;
+  pendingRide: any = null;
+  countdown = ACCEPT_TIMEOUT;
+
+  activeRide: any = null;
+  completedRide: any = null;
 
   private map!: L.Map;
   private riderMarker!: L.Marker;
+  private pickupMarker?: L.Marker;
+  private dropMarker?: L.Marker;
   private watchId: number | null = null;
 
-  private queueIndex = 0;
-  private nextOrderTimer: any;
+  private currentLat: number | null = null;
+  private currentLng: number | null = null;
+
   private countdownTimer: any;
+  private subs: Subscription[] = [];
 
-  private readonly orderQueue: Order[] = [
-    { id: 'ORD001', restaurant: 'Anna Poorna Hotel',   address: 'No. 12, Anna Street, Chennai',      price: 50,  tip: 20, rating: 4.2, distance: '1.2 km' },
-    { id: 'ORD002', restaurant: 'Saravana Bhavan',     address: 'No. 5, Mount Road, Chennai',         price: 75,  tip: 15, rating: 4.5, distance: '2.4 km' },
-    { id: 'ORD003', restaurant: 'Murugan Idli Shop',   address: 'No. 77, T.Nagar, Chennai',           price: 40,  tip: 10, rating: 4.0, distance: '0.8 km' },
-    { id: 'ORD004', restaurant: 'Anjappar Chettinad',  address: 'No. 3, Velachery Main Road',         price: 90,  tip: 25, rating: 4.3, distance: '3.1 km' },
-    { id: 'ORD005', restaurant: 'Vasanta Bhavan',      address: 'No. 18, OMR Road, Chennai',          price: 60,  tip: 12, rating: 4.1, distance: '1.7 km' },
-    { id: 'ORD006', restaurant: 'Junior Kuppanna',     address: 'No. 9, Arcot Road, Chennai',         price: 110, tip: 30, rating: 4.6, distance: '4.0 km' },
-    { id: 'ORD007', restaurant: 'Ponnusamy Hotel',     address: 'No. 45, Kodambakkam High Road',      price: 85,  tip: 20, rating: 4.2, distance: '2.9 km' },
-    { id: 'ORD008', restaurant: 'Hotel Palmgrove',     address: 'No. 2, Nungambakkam High Road',      price: 130, tip: 35, rating: 4.7, distance: '5.2 km' },
-    { id: 'ORD009', restaurant: 'Mathsya Restaurant',  address: 'No. 31, Egmore High Road, Chennai',  price: 55,  tip: 10, rating: 3.9, distance: '1.0 km' },
-    { id: 'ORD010', restaurant: 'Hot Breads Bakery',   address: 'No. 6, Cathedral Road, Chennai',     price: 45,  tip: 8,  rating: 4.0, distance: '0.6 km' },
-  ];
-
-  constructor(private router: Router) {}
+  constructor(private router: Router, private api: ApiService, private signalr: SignalrService) {}
 
   get greeting(): string {
     const h = new Date().getHours();
     if (h < 12) return 'Good morning';
     if (h < 17) return 'Good afternoon';
     return 'Good evening';
+  }
+
+  ngOnInit() {
+    this.signalr.connect();
+
+    this.subs.push(this.signalr.newRideRequest$.subscribe(data => this.onNewRideRequest(data)));
+    this.subs.push(this.signalr.rideCancelled$.subscribe(data => this.onRideCancelled(data)));
+
+    this.api.get('rider/profile').subscribe({
+      next: (profile) => {
+        this.riderName = profile?.fullName || 'Driver';
+        this.isOnline = !!profile?.isOnline;
+        this.vehicleType = profile?.vehicle?.vehicleType || '';
+        this.vehicleNumber = profile?.vehicle?.vehicleNumber || '';
+      },
+      error: () => {}
+    });
   }
 
   ngAfterViewInit() {
@@ -93,80 +111,191 @@ export class HomePage implements AfterViewInit, OnDestroy {
         const { latitude: lat, longitude: lng } = pos.coords;
         this.map.setView([lat, lng], 15);
         this.riderMarker.setLatLng([lat, lng]);
+        this.currentLat = lat;
+        this.currentLng = lng;
       });
 
       this.watchId = navigator.geolocation.watchPosition(pos => {
         const { latitude: lat, longitude: lng } = pos.coords;
         this.riderMarker.setLatLng([lat, lng]);
         this.map.panTo([lat, lng]);
+        this.currentLat = lat;
+        this.currentLng = lng;
+
+        if (this.isOnline) {
+          this.signalr.updateLocation(lat, lng);
+        }
       });
     }
   }
 
   toggleStatus() {
-    this.isOnline = !this.isOnline;
     if (this.isOnline) {
-      this.queueIndex = 0;
-      this.scheduleNextOrder(3000);
-    } else {
-      this.clearAllTimers();
-      this.pendingOrder = null;
+      this.api.post('rider/go-offline', {}).subscribe({
+        next: () => {
+          this.isOnline = false;
+        }
+      });
+      return;
+    }
+
+    if (this.currentLat == null || this.currentLng == null) {
+      return;
+    }
+
+    this.api.post('rider/go-online', {
+      currentLat: this.currentLat,
+      currentLong: this.currentLng
+    }).subscribe({
+      next: () => {
+        this.isOnline = true;
+      },
+      error: (err) => {
+        console.error('Failed to go online:', err?.error?.message || err);
+      }
+    });
+  }
+
+  private onNewRideRequest(data: any) {
+    if (this.activeRide) return; // already on a ride, ignore new offers
+
+    this.pendingRide = data;
+    this.startCountdown(data.acceptWithinSeconds || ACCEPT_TIMEOUT);
+    this.showRideMarkers(data);
+  }
+
+  private onRideCancelled(data: any) {
+    if (this.pendingRide?.rideId === data?.rideId) {
+      this.clearCountdown();
+      this.pendingRide = null;
+      this.clearRideMarkers();
+    }
+    if (this.activeRide?.rideId === data?.rideId) {
+      this.activeRide = null;
+      this.clearRideMarkers();
     }
   }
 
-  private showOrder() {
-    if (!this.isOnline) return;
-    this.pendingOrder = this.orderQueue[this.queueIndex % this.orderQueue.length];
-    this.queueIndex++;
-    this.startCountdown();
-  }
-
-  private scheduleNextOrder(delay = 4000) {
-    this.clearAllTimers();
-    this.nextOrderTimer = setTimeout(() => this.showOrder(), delay);
-  }
-
-  private startCountdown() {
-    clearInterval(this.countdownTimer);
-    this.countdown = ORDER_TIMEOUT;
+  private startCountdown(seconds: number) {
+    this.clearCountdown();
+    this.countdown = seconds;
     this.countdownTimer = setInterval(() => {
       this.countdown--;
       if (this.countdown <= 0) {
-        clearInterval(this.countdownTimer);
-        this.pendingOrder = null;
-        this.scheduleNextOrder(2000);
+        this.clearCountdown();
+        this.pendingRide = null;
+        this.clearRideMarkers();
       }
     }, 1000);
   }
 
-  private clearAllTimers() {
-    clearTimeout(this.nextOrderTimer);
+  private clearCountdown() {
     clearInterval(this.countdownTimer);
   }
 
-  acceptOrder() {
-    this.clearAllTimers();
-    this.pendingOrder = null;
-    this.scheduleNextOrder(5000);
+  acceptRide() {
+    if (!this.pendingRide) return;
+
+    this.api.post('rider/accept-ride', { rideId: this.pendingRide.rideId }).subscribe({
+      next: () => {
+        this.clearCountdown();
+        this.activeRide = { ...this.pendingRide, rideStatus: 'Accepted' };
+        this.pendingRide = null;
+      },
+      error: () => {
+        this.clearCountdown();
+        this.pendingRide = null;
+        this.clearRideMarkers();
+      }
+    });
   }
 
-  cancelOrder() {
-    this.clearAllTimers();
-    this.pendingOrder = null;
-    this.scheduleNextOrder(2000);
+  rejectRide() {
+    if (!this.pendingRide) return;
+    const rideId = this.pendingRide.rideId;
+
+    this.api.post('rider/reject-ride', { rideId, reason: 'Driver rejected' }).subscribe({
+      next: () => {},
+      error: () => {}
+    });
+
+    this.clearCountdown();
+    this.pendingRide = null;
+    this.clearRideMarkers();
+  }
+
+  startRide() {
+    if (!this.activeRide) return;
+
+    this.api.post(`rider/start-ride/${this.activeRide.rideId}`, {}).subscribe({
+      next: () => {
+        this.activeRide.rideStatus = 'Started';
+      }
+    });
+  }
+
+  endRide() {
+    if (!this.activeRide) return;
+
+    this.api.post(`rider/end-ride/${this.activeRide.rideId}`, {}).subscribe({
+      next: (res) => {
+        this.completedRide = res?.data || this.activeRide;
+        this.activeRide = null;
+        this.clearRideMarkers();
+      }
+    });
+  }
+
+  dismissCompleted() {
+    this.completedRide = null;
+  }
+
+  private showRideMarkers(ride: any) {
+    this.clearRideMarkers();
+    if (!this.map) return;
+
+    if (ride.pickupLat != null && ride.pickupLong != null) {
+      this.pickupMarker = L.marker([ride.pickupLat, ride.pickupLong])
+        .addTo(this.map)
+        .bindPopup('Pickup');
+    }
+    if (ride.dropLat != null && ride.dropLong != null) {
+      this.dropMarker = L.marker([ride.dropLat, ride.dropLong])
+        .addTo(this.map)
+        .bindPopup('Drop');
+    }
+  }
+
+  private clearRideMarkers() {
+    if (this.pickupMarker) {
+      this.map?.removeLayer(this.pickupMarker);
+      this.pickupMarker = undefined;
+    }
+    if (this.dropMarker) {
+      this.map?.removeLayer(this.dropMarker);
+      this.dropMarker = undefined;
+    }
+  }
+
+  iconFor(vehicleType: string): string {
+    return VEHICLE_ICONS[vehicleType] || '🚗';
   }
 
   setTab(tab: string) { this.activeTab = tab; }
 
   logout() {
-    this.clearAllTimers();
+    this.clearCountdown();
+    this.subs.forEach(s => s.unsubscribe());
+    this.signalr.disconnect();
     if (this.watchId !== null) navigator.geolocation.clearWatch(this.watchId);
     localStorage.removeItem('token');
     this.router.navigate(['/login']);
   }
 
   ngOnDestroy() {
-    this.clearAllTimers();
+    this.clearCountdown();
+    this.subs.forEach(s => s.unsubscribe());
+    this.signalr.disconnect();
     if (this.watchId !== null) navigator.geolocation.clearWatch(this.watchId);
     if (this.map) this.map.remove();
   }

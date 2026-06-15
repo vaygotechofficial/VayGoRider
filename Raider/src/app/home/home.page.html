@@ -28,24 +28,24 @@
       <div id="map"></div>
 
       <!-- EARN BANNER -->
-      <div class="earn-banner">
+      <div class="earn-banner" *ngIf="!pendingRide && !activeRide && !completedRide">
         <img src="assets/VayGoIcon.png" class="earn-logo" alt="VayGo" />
         <div class="earn-text">
-          <p>Today extra earn</p>
-          <h3>₹ 20 per order</h3>
+          <p>{{ vehicleType || 'Your vehicle' }}</p>
+          <h3>{{ vehicleNumber || '--' }}</h3>
         </div>
       </div>
     </div>
 
-    <!-- ORDER CARD -->
-    <div class="order-card" *ngIf="pendingOrder">
+    <!-- NEW RIDE REQUEST -->
+    <div class="order-card" *ngIf="pendingRide">
       <div class="order-top">
-        <span class="order-label">Order assign</span>
+        <span class="order-label">New Ride Request</span>
         <div class="countdown" [class.urgent]="countdown <= 5">
           <svg class="countdown-ring" viewBox="0 0 36 36">
             <circle class="ring-bg" cx="18" cy="18" r="15"/>
             <circle class="ring-fill" cx="18" cy="18" r="15"
-              [style.stroke-dashoffset]="94.2 - (94.2 * countdown / 10)"/>
+              [style.stroke-dashoffset]="94.2 - (94.2 * countdown / 25)"/>
           </svg>
           <span class="countdown-num">{{ countdown }}</span>
         </div>
@@ -53,37 +53,72 @@
       <div class="order-row">
         <div class="order-info">
           <div class="restaurant-name">
-            {{ pendingOrder.restaurant }}
-            <span class="star">⭐ {{ pendingOrder.rating }}</span>
+            {{ iconFor(pendingRide.vehicleType) }} {{ pendingRide.vehicleType }}
           </div>
-          <div class="order-addr">{{ pendingOrder.address }}</div>
-          <div class="order-dist">📍 {{ pendingOrder.distance }}</div>
+          <div class="order-addr">📍 {{ pendingRide.pickupAddress }}</div>
+          <div class="order-addr">🏁 {{ pendingRide.dropAddress }}</div>
         </div>
         <div class="order-price-col">
-          <span class="price">₹{{ pendingOrder.price }}</span>
-          <span class="tip">tip ₹{{ pendingOrder.tip }}</span>
+          <span class="price">₹{{ pendingRide.estimatedFare }}</span>
         </div>
       </div>
       <div class="swipe-row">
-        <button class="accept-btn" (click)="acceptOrder()">
+        <button class="accept-btn" (click)="acceptRide()">
           <span class="arrow">→</span>
         </button>
-        <span class="swipe-label">Swipe to accept</span>
+        <span class="swipe-label">Accept ride</span>
       </div>
-      <button class="cancel-link" (click)="cancelOrder()">Cancel order</button>
+      <button class="cancel-link" (click)="rejectRide()">Reject</button>
+    </div>
+
+    <!-- ACTIVE RIDE -->
+    <div class="order-card" *ngIf="activeRide">
+      <div class="order-top">
+        <span class="order-label">{{ activeRide.rideStatus === 'Started' ? 'Trip in progress' : 'Heading to pickup' }}</span>
+      </div>
+      <div class="order-row">
+        <div class="order-info">
+          <div class="restaurant-name">
+            {{ iconFor(activeRide.vehicleType) }} {{ activeRide.vehicleType }}
+          </div>
+          <div class="order-addr">📍 {{ activeRide.pickupAddress }}</div>
+          <div class="order-addr">🏁 {{ activeRide.dropAddress }}</div>
+        </div>
+        <div class="order-price-col">
+          <span class="price">₹{{ activeRide.estimatedFare }}</span>
+        </div>
+      </div>
+      <button class="go-online-btn" *ngIf="activeRide.rideStatus === 'Accepted'" (click)="startRide()">Start Ride</button>
+      <button class="go-online-btn" *ngIf="activeRide.rideStatus === 'Started'" (click)="endRide()">End Ride</button>
+    </div>
+
+    <!-- COMPLETED RIDE -->
+    <div class="order-card" *ngIf="completedRide">
+      <div class="order-top">
+        <span class="order-label">Trip Completed</span>
+      </div>
+      <div class="order-row">
+        <div class="order-info">
+          <div class="restaurant-name">Fare collected</div>
+        </div>
+        <div class="order-price-col">
+          <span class="price">₹{{ completedRide.finalFare }}</span>
+        </div>
+      </div>
+      <button class="go-online-btn" (click)="dismissCompleted()">Done</button>
     </div>
 
     <!-- OFFLINE PROMPT -->
-    <div class="offline-card" *ngIf="!isOnline">
+    <div class="offline-card" *ngIf="!isOnline && !pendingRide && !activeRide && !completedRide">
       <p class="offline-msg">You are <strong>Offline</strong></p>
-      <p class="offline-sub">Tap the toggle to go online and receive orders</p>
+      <p class="offline-sub">Tap the toggle to go online and receive ride requests</p>
       <button class="go-online-btn" (click)="toggleStatus()">Go Online</button>
     </div>
 
     <!-- WAITING CARD -->
-    <div class="waiting-card" *ngIf="isOnline && !pendingOrder">
+    <div class="waiting-card" *ngIf="isOnline && !pendingRide && !activeRide && !completedRide">
       <div class="pulse-dot"></div>
-      <p class="waiting-msg">Looking for orders…</p>
+      <p class="waiting-msg">Looking for rides…</p>
     </div>
 
     <!-- BOTTOM NAV -->
