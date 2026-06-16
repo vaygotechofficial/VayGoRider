@@ -15,10 +15,14 @@ export class ApiService {
 
   // Common headers (optional)
   private getHeaders() {
-    return new HttpHeaders({
+    const headers: any = {
       'Content-Type': 'application/json'
-      // 'Authorization': 'Bearer token' (if needed)
-    });
+    };
+    const token = localStorage.getItem('token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return new HttpHeaders(headers);
   }
 
   // GET

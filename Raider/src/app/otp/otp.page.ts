@@ -1,16 +1,15 @@
 import { Component, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonContent, IonButton, IonText, LoadingController } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
-
-const DUMMY_OTP = '123456';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-otp',
   templateUrl: './otp.page.html',
   styleUrls: ['./otp.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonContent, IonButton, IonText]
 })
 export class OtpPage {
   @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
@@ -23,7 +22,12 @@ export class OtpPage {
   mobile = '';
   private timerRef: any;
 
-  constructor(private route: ActivatedRoute, private router: Router) {
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService,
+    private loadingCtrl: LoadingController
+  ) {
     this.route.queryParams.subscribe(params => {
       this.mobile = params['mobile'];
     });
@@ -68,19 +72,34 @@ export class OtpPage {
     this.router.navigate(['/login']);
   }
 
-  verifyOtp() {
+  async verifyOtp() {
     const entered = this.digits.join('');
     if (entered.length < 6) {
       this.errorMsg = 'Enter complete OTP';
       return;
     }
-    if (entered !== DUMMY_OTP) {
-      this.errorMsg = `Invalid OTP. Use ${DUMMY_OTP} to continue.`;
-      return;
-    }
-    this.errorMsg = '';
-    clearInterval(this.timerRef);
-    this.router.navigate(['/home']);
+
+    const loader = await this.loadingCtrl.create({ message: 'Verifying...' });
+    await loader.present();
+
+    this.authService.verifyOtp(this.mobile, entered).subscribe({
+      next: (res) => {
+        loader.dismiss();
+        this.errorMsg = '';
+        clearInterval(this.timerRef);
+
+        const userData = res.userData || res.UserData;
+        if (userData && !userData.fullName) {
+          this.router.navigate(['/registration']);
+        } else {
+          this.router.navigate(['/home']);
+        }
+      },
+      error: (err) => {
+        loader.dismiss();
+        this.errorMsg = err.error?.message || 'Invalid OTP. Please try again.';
+      }
+    });
   }
 
   resendOtp() {
@@ -90,6 +109,9 @@ export class OtpPage {
     this.otpInputs?.forEach(ref => (ref.nativeElement.value = ''));
     this.otpInputs?.first?.nativeElement.focus();
     this.startTimer();
+    this.authService.sendOtp(this.mobile).subscribe({
+      error: (err: any) => { this.errorMsg = err.error?.message || 'Failed to resend OTP.'; }
+    });
   }
 
   startTimer() {

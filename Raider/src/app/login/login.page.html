@@ -27,6 +27,10 @@
         <p *ngIf="loginForm.get('mobile')?.errors?.['pattern']">Enter valid 10-digit number</p>
       </ion-text>
 
+      <ion-text color="danger" *ngIf="errormessage">
+        <p class="ion-text-center">{{ errormessage }}</p>
+      </ion-text>
+
       <ion-button expand="block" class="btn" type="submit">
         Login
       </ion-button>
