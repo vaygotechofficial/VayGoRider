@@ -1,5 +1,10 @@
 export const environment = {
   production: true,
-  baseUrl:'https://vaygotech-afhdbqfde5b0gkh0.centralindia-01.azurewebsites.net/api',
-  userType: 'RIDER'
+  baseUrl: 'https://apps.vaygotech.com/api',
+  userType: 'RIDER',
+  acceptTimeoutSeconds: 25,
+  defaultMapLat: 13.0827,
+  defaultMapLng: 80.2707,
+  mapZoom: 15,
+  devDummyOtp: ''
 };

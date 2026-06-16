@@ -1,9 +1,9 @@
-import { Component, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonButton, IonText } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
-
-const DUMMY_OTP = '123456';
+import { AuthService } from '../../services/auth.service';
+import { RegistrationStateService } from '../registration-state.service';
 
 @Component({
   selector: 'app-reg-otp',
@@ -12,10 +12,9 @@ const DUMMY_OTP = '123456';
   standalone: true,
   imports: [CommonModule, IonContent, IonButton, IonText]
 })
-export class RegOtpPage {
+export class RegOtpPage implements AfterViewInit {
   @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
-  // slots is readonly — *ngFor never re-renders, DOM inputs are never recreated
   readonly slots = [0, 1, 2, 3, 4, 5];
   private digits: string[] = ['', '', '', '', '', ''];
 
@@ -24,11 +23,42 @@ export class RegOtpPage {
   timer = 30;
   private timerRef: any;
 
-  constructor(private route: ActivatedRoute, private router: Router) {
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService,
+    private regState: RegistrationStateService
+  ) {
     this.route.queryParams.subscribe(params => {
       this.step = +params['step'] || 1;
     });
     this.startTimer();
+  }
+
+  ngAfterViewInit() {
+    this.sendOtp();
+  }
+
+  private sendOtp() {
+    // Empty userType skips existence check on backend — correct for new registration
+    this.authService.sendOtp(this.regState.mobileNumber, '').subscribe({
+      next: (res) => {
+        if (res.devOtp) this.fillOtp(res.devOtp);
+      },
+      error: (err) => {
+        this.errorMsg = err.error?.message || 'Failed to send OTP. Please go back and try again.';
+      }
+    });
+  }
+
+  private fillOtp(otp: string) {
+    const chars = otp.split('');
+    chars.forEach((c, i) => { this.digits[i] = c; });
+    setTimeout(() => {
+      this.otpInputs?.toArray().forEach((ref, i) => {
+        ref.nativeElement.value = chars[i] || '';
+      });
+    }, 0);
   }
 
   onInput(event: Event, index: number) {
@@ -42,7 +72,6 @@ export class RegOtpPage {
     }
 
     const digit = raw[0];
-    // Write directly to the DOM — no Angular binding to trigger re-render
     input.value = digit;
     this.digits[index] = digit;
 
@@ -72,13 +101,17 @@ export class RegOtpPage {
       this.errorMsg = 'Please enter the complete 6-digit OTP';
       return;
     }
-    if (entered !== DUMMY_OTP) {
-      this.errorMsg = `Invalid OTP. Enter ${DUMMY_OTP} to continue.`;
-      return;
-    }
-    this.errorMsg = '';
-    clearInterval(this.timerRef);
-    this.router.navigate([this.step === 1 ? '/registration/step2' : '/registration/step3']);
+
+    this.authService.verifyOtp(this.regState.mobileNumber, entered, '').subscribe({
+      next: () => {
+        this.errorMsg = '';
+        clearInterval(this.timerRef);
+        this.router.navigate([this.step === 1 ? '/registration/step2' : '/registration/step3']);
+      },
+      error: (err) => {
+        this.errorMsg = err.error?.message || 'Invalid OTP. Please try again.';
+      }
+    });
   }
 
   resendOtp() {
@@ -88,6 +121,7 @@ export class RegOtpPage {
     this.otpInputs?.forEach(ref => (ref.nativeElement.value = ''));
     this.otpInputs?.first?.nativeElement.focus();
     this.startTimer();
+    this.sendOtp();
   }
 
   private startTimer() {

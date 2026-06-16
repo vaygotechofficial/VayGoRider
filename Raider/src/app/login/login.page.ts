@@ -40,9 +40,9 @@ export class LoginPage {
 
     const mobile = this.loginForm.value.mobile!;
     this.authService.sendOtp(mobile).subscribe({
-      next: () => {
+      next: (res) => {
         loader.dismiss();
-        this.router.navigate(['/otp'], { queryParams: { mobile } });
+        this.router.navigate(['/otp'], { queryParams: { mobile, devOtp: res.devOtp } });
       },
       error: (err) => {
         loader.dismiss();

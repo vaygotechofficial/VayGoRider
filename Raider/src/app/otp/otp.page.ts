@@ -1,4 +1,4 @@
-import { Component, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonButton, IonText, LoadingController } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { AuthService } from '../services/auth.service';
   standalone: true,
   imports: [CommonModule, IonContent, IonButton, IonText]
 })
-export class OtpPage {
+export class OtpPage implements AfterViewInit {
   @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   readonly slots = [0, 1, 2, 3, 4, 5];
@@ -20,6 +20,7 @@ export class OtpPage {
   timer = 30;
   errorMsg = '';
   mobile = '';
+  private devOtp = '';
   private timerRef: any;
 
   constructor(
@@ -30,8 +31,25 @@ export class OtpPage {
   ) {
     this.route.queryParams.subscribe(params => {
       this.mobile = params['mobile'];
+      this.devOtp = params['devOtp'] || '';
     });
     this.startTimer();
+  }
+
+  ngAfterViewInit() {
+    if (this.devOtp) {
+      this.fillOtp(this.devOtp);
+    }
+  }
+
+  private fillOtp(otp: string) {
+    const chars = otp.split('');
+    chars.forEach((c, i) => { this.digits[i] = c; });
+    setTimeout(() => {
+      this.otpInputs?.toArray().forEach((ref, i) => {
+        ref.nativeElement.value = chars[i] || '';
+      });
+    }, 0);
   }
 
   onInput(event: Event, index: number) {
@@ -110,6 +128,9 @@ export class OtpPage {
     this.otpInputs?.first?.nativeElement.focus();
     this.startTimer();
     this.authService.sendOtp(this.mobile).subscribe({
+      next: (res) => {
+        if (res.devOtp) this.fillOtp(res.devOtp);
+      },
       error: (err: any) => { this.errorMsg = err.error?.message || 'Failed to resend OTP.'; }
     });
   }
