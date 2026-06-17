@@ -391,3 +391,44 @@ ion-content {
   color: #fff;
   font-weight: 700;
 }
+
+.otp-label {
+  font-size: 12px;
+  color: #888;
+  margin: 8px 0 4px;
+  text-align: center;
+}
+
+.otp-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.otp-input {
+  width: 90px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  border: 2px solid #8b1c2c;
+  border-radius: 10px;
+  padding: 8px 4px;
+  background: #fff;
+  color: #1a050b;
+}
+
+.otp-error {
+  font-size: 11px;
+  color: #c0392b;
+  text-align: center;
+  margin: 2px 0;
+}
+
+.accept-btn.small {
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}

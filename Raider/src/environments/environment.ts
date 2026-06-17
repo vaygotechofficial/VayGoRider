@@ -3,8 +3,7 @@ export const environment = {
   baseUrl: 'https://apps.vaygotech.com/api',
   userType: 'RIDER',
   acceptTimeoutSeconds: 25,
-  defaultMapLat: 13.0827,
-  defaultMapLng: 80.2707,
+  googleMapsApiKey: 'AIzaSyDLum8xBKx4Wp3Uetglx8qzE5MA-qmF_qA',
   mapZoom: 15,
   devDummyOtp: '123456'
 };

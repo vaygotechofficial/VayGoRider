@@ -20,12 +20,22 @@ export class SignalrService {
 
   connect(): void {
     if (this.hubConnection) return;
+    this.startConnection();
+  }
 
-    const hubUrl = environment.baseUrl.replace(/\/api\/?$/, '') + '/hubs/notifications';
+  reconnect(): void {
+    this.disconnect();
+    this.startConnection();
+  }
+
+  private startConnection(): void {
+    const hubUrl = environment.baseUrl.replace(/\/+$/, '') + '/hubs/notifications';
     const driverId = getCurrentDriverId();
 
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${hubUrl}?driverId=${driverId}`)
+      .withUrl(`${hubUrl}?driverId=${driverId}`, {
+        transport: signalR.HttpTransportType.LongPolling
+      })
       .withAutomaticReconnect()
       .build();
 

@@ -88,8 +88,23 @@
           <span class="price">₹{{ activeRide.estimatedFare }}</span>
         </div>
       </div>
-      <button class="go-online-btn" *ngIf="activeRide.rideStatus === 'Accepted'" (click)="startRide()">Start Ride</button>
-      <button class="go-online-btn" *ngIf="activeRide.rideStatus === 'Started'" (click)="endRide()">End Ride</button>
+
+      <!-- OTP entry — shown before ride starts -->
+      <ng-container *ngIf="activeRide.rideStatus === 'Accepted'">
+        <p class="otp-label">Ask passenger for 4-digit trip code</p>
+        <div class="otp-row">
+          <input class="otp-input" type="text" maxlength="4" [(ngModel)]="otpInput"
+                 placeholder="_ _ _ _" />
+          <button class="accept-btn small" (click)="startRide()">→</button>
+        </div>
+        <p class="otp-error" *ngIf="otpError">{{ otpError }}</p>
+      </ng-container>
+
+      <!-- End ride — shown after ride started -->
+      <ng-container *ngIf="activeRide.rideStatus === 'Started'">
+        <p class="otp-error" *ngIf="endRideError">{{ endRideError }}</p>
+        <button class="go-online-btn" (click)="endRide()">End Ride</button>
+      </ng-container>
     </div>
 
     <!-- COMPLETED RIDE -->
