@@ -44,6 +44,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   otpInput = '';
   otpError = '';
   endRideError = '';
+  locationDenied = false;
 
   private gmap!: google.maps.Map;
   private riderMarker!: google.maps.Marker;
@@ -78,6 +79,8 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.subs.push(this.signalr.newRideRequest$.subscribe(d => this.onNewRideRequest(d)));
     this.subs.push(this.signalr.rideCancelled$.subscribe(d => this.onRideCancelled(d)));
 
+    this.restoreActiveRide();
+
     this.api.get('rider/profile').subscribe({
       next: (profile) => {
         this.riderName = profile?.fullName || 'Driver';
@@ -87,6 +90,20 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       },
       error: () => {}
     });
+  }
+
+  private restoreActiveRide() {
+    const saved = localStorage.getItem('riderActiveRide');
+    if (!saved) return;
+    try { this.activeRide = JSON.parse(saved); } catch { localStorage.removeItem('riderActiveRide'); }
+  }
+
+  private saveActiveRide() {
+    if (this.activeRide) {
+      localStorage.setItem('riderActiveRide', JSON.stringify(this.activeRide));
+    } else {
+      localStorage.removeItem('riderActiveRide');
+    }
   }
 
   ngAfterViewInit() {
@@ -99,6 +116,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.googleReady = true;
 
     const center = await this.getInitialLocation();
+    if (!center) return;
 
     this.gmap = new google.maps.Map(document.getElementById('map') as HTMLElement, {
       center,
@@ -124,6 +142,16 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.currentLat = center.lat;
     this.currentLng = center.lng;
 
+    if (this.activeRide) {
+      this.showRideMarkers(this.activeRide);
+      const status = this.activeRide.rideStatus;
+      if (status === 'Accepted') {
+        this.drawRoute(center.lat, center.lng, Number(this.activeRide.pickupLat), Number(this.activeRide.pickupLong));
+      } else if (status === 'Started') {
+        this.drawRoute(center.lat, center.lng, Number(this.activeRide.dropLat), Number(this.activeRide.dropLong));
+      }
+    }
+
     if (navigator.geolocation) {
       this.watchId = navigator.geolocation.watchPosition(pos => {
         this.ngZone.run(() => {
@@ -142,16 +170,25 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private getInitialLocation(): Promise<{ lat: number; lng: number }> {
+  retryLocation() {
+    this.locationDenied = false;
+    this.initGoogleMaps();
+  }
+
+  private getInitialLocation(): Promise<{ lat: number; lng: number } | null> {
     return new Promise(resolve => {
       if (!navigator.geolocation) {
-        resolve({ lat: 17.4256, lng: 78.4512 });
+        this.ngZone.run(() => { this.locationDenied = true; });
+        resolve(null);
         return;
       }
       navigator.geolocation.getCurrentPosition(
         pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        ()  => resolve({ lat: 17.4256, lng: 78.4512 }),
-        { timeout: 8000, maximumAge: 60000 }
+        () => {
+          this.ngZone.run(() => { this.locationDenied = true; });
+          resolve(null);
+        },
+        { timeout: 10000, maximumAge: 0, enableHighAccuracy: true }
       );
     });
   }
@@ -192,6 +229,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     }
     if (this.activeRide?.rideId === data?.rideId) {
       this.activeRide = null;
+      localStorage.removeItem('riderActiveRide');
       this.clearRideMarkers();
     }
   }
@@ -223,6 +261,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         this.clearCountdown();
         this.activeRide = { ...this.pendingRide, rideStatus: 'Accepted' };
         this.pendingRide = null;
+        this.saveActiveRide();
         this.drawRoute(
           this.currentLat!, this.currentLng!,
           Number(this.activeRide.pickupLat), Number(this.activeRide.pickupLong)
@@ -260,6 +299,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       next: () => {
         this.activeRide.rideStatus = 'Started';
         this.otpInput = '';
+        this.saveActiveRide();
         this.drawRoute(
           this.currentLat!, this.currentLng!,
           Number(this.activeRide.dropLat), Number(this.activeRide.dropLong)
@@ -289,6 +329,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         this.completedRide = res?.data || this.activeRide;
         this.activeRide = null;
+        localStorage.removeItem('riderActiveRide');
         this.clearRideMarkers();
         this.clearRoute();
       }
@@ -395,6 +436,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.signalr.disconnect();
     if (this.watchId !== null) navigator.geolocation.clearWatch(this.watchId);
     localStorage.removeItem('token');
+    localStorage.removeItem('driverId');
     this.router.navigate(['/login']);
   }
 

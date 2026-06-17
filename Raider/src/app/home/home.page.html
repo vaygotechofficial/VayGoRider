@@ -23,8 +23,17 @@
       <h2 class="greet-name">Hey, {{ riderName }}</h2>
     </div>
 
+    <!-- LOCATION DENIED -->
+    <div class="location-gate" *ngIf="locationDenied">
+      <div class="location-gate-icon">📍</div>
+      <h3 class="location-gate-title">Location Required</h3>
+      <p class="location-gate-msg">VayGo needs your GPS location to show your position and receive nearby ride requests.</p>
+      <p class="location-gate-hint">Enable location in your browser or device settings, then tap Retry.</p>
+      <button class="go-online-btn" (click)="retryLocation()">Retry</button>
+    </div>
+
     <!-- MAP AREA -->
-    <div class="map-area">
+    <div class="map-area" [hidden]="locationDenied">
       <div id="map"></div>
 
       <!-- EARN BANNER -->
