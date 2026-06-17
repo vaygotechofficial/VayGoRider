@@ -5,6 +5,8 @@ import { IonContent } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { Subscription } from 'rxjs';
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
 import { ApiService } from '../services/api';
 import { SignalrService, getCurrentDriverId } from '../services/signalr';
 import { environment } from 'src/environments/environment';
@@ -52,7 +54,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   private dropMarker?: google.maps.Marker;
   private directionsRenderer?: google.maps.DirectionsRenderer;
   private googleReady = false;
-  private watchId: number | null = null;
+  private watchId: string | null = null;
 
   private currentLat: number | null = null;
   private currentLng: number | null = null;
@@ -152,22 +154,21 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    if (navigator.geolocation) {
-      this.watchId = navigator.geolocation.watchPosition(pos => {
-        this.ngZone.run(() => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          this.riderMarker.setPosition({ lat, lng });
-          this.gmap.panTo({ lat, lng });
-          this.currentLat = lat;
-          this.currentLng = lng;
+    Geolocation.watchPosition({ enableHighAccuracy: true }, (pos, err) => {
+      if (err || !pos) return;
+      this.ngZone.run(() => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        this.riderMarker.setPosition({ lat, lng });
+        this.gmap.panTo({ lat, lng });
+        this.currentLat = lat;
+        this.currentLng = lng;
 
-          if (this.isOnline || this.activeRide) {
-            this.signalr.updateLocation(lat, lng);
-          }
-        });
+        if (this.isOnline || this.activeRide) {
+          this.signalr.updateLocation(lat, lng);
+        }
       });
-    }
+    }).then(id => { this.watchId = id; });
   }
 
   retryLocation() {
@@ -175,22 +176,19 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.initGoogleMaps();
   }
 
-  private getInitialLocation(): Promise<{ lat: number; lng: number } | null> {
-    return new Promise(resolve => {
-      if (!navigator.geolocation) {
+  private async getInitialLocation(): Promise<{ lat: number; lng: number } | null> {
+    try {
+      const perm = await Geolocation.requestPermissions();
+      if (perm.location === 'denied') {
         this.ngZone.run(() => { this.locationDenied = true; });
-        resolve(null);
-        return;
+        return null;
       }
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => {
-          this.ngZone.run(() => { this.locationDenied = true; });
-          resolve(null);
-        },
-        { timeout: 10000, maximumAge: 0, enableHighAccuracy: true }
-      );
-    });
+      const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
+      return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    } catch {
+      this.ngZone.run(() => { this.locationDenied = true; });
+      return null;
+    }
   }
 
   toggleStatus() {
@@ -434,7 +432,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.clearCountdown();
     this.subs.forEach(s => s.unsubscribe());
     this.signalr.disconnect();
-    if (this.watchId !== null) navigator.geolocation.clearWatch(this.watchId);
+    if (this.watchId !== null) Geolocation.clearWatch({ id: this.watchId });
     localStorage.removeItem('token');
     localStorage.removeItem('driverId');
     this.router.navigate(['/login']);
@@ -444,7 +442,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.clearCountdown();
     this.subs.forEach(s => s.unsubscribe());
     this.signalr.disconnect();
-    if (this.watchId !== null) navigator.geolocation.clearWatch(this.watchId);
+    if (this.watchId !== null) Geolocation.clearWatch({ id: this.watchId });
     this.clearRoute();
   }
 }
