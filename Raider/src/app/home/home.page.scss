@@ -95,6 +95,50 @@ ion-content {
   transform: translateX(24px);
 }
 
+.break-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.break-btn.active {
+  background: #f5a623;
+  border-color: #f5a623;
+  color: #1a050b;
+}
+
+.break-banner {
+  margin: 0 18px 8px;
+  background: rgba(245,166,35,0.18);
+  border: 1px solid rgba(245,166,35,0.5);
+  color: #ffd9a0;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+.sos-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
 .avatar {
   width: 38px;
   height: 38px;

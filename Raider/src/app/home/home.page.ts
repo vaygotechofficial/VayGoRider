@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent } from '@ionic/angular/standalone';
+import { IonContent, ToastController, AlertController } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { Subscription } from 'rxjs';
@@ -32,6 +32,7 @@ const VEHICLE_ICONS: Record<string, string> = {
 })
 export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   isOnline = false;
+  onBreak = false;
   riderName = 'Driver';
   vehicleType = '';
   vehicleNumber = '';
@@ -66,7 +67,9 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private api: ApiService,
     private signalr: SignalrService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private toastCtrl: ToastController,
+    private alertCtrl: AlertController
   ) {}
 
   get greeting(): string {
@@ -87,6 +90,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       next: (profile) => {
         this.riderName = profile?.fullName || 'Driver';
         this.isOnline = !!profile?.isOnline;
+        this.onBreak = !!profile?.onBreak;
         this.vehicleType = profile?.vehicle?.vehicleType || '';
         this.vehicleNumber = profile?.vehicle?.vehicleNumber || '';
       },
@@ -195,7 +199,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     const driverId = getCurrentDriverId();
     if (this.isOnline) {
       this.api.post('rider/go-offline', { driverId }).subscribe({
-        next: () => { this.isOnline = false; }
+        next: () => { this.isOnline = false; this.onBreak = false; }
       });
       return;
     }
@@ -211,6 +215,59 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       error: (err) => { console.error('go-online failed:', err?.error?.message || err); }
     });
   }
+
+  toggleBreak() {
+    if (!this.isOnline) return;
+    const driverId = getCurrentDriverId();
+    const next = !this.onBreak;
+    this.api.post('rider/break', { driverId, onBreak: next }).subscribe({
+      next: (res) => {
+        this.onBreak = res?.onBreak ?? next;
+        this.showToast(res?.message || (this.onBreak ? 'You are on a break' : 'Welcome back online'));
+      },
+      error: () => { this.showToast('Could not update break status'); }
+    });
+  }
+
+  async confirmSos() {
+    const alert = await this.alertCtrl.create({
+      header: 'Send SOS?',
+      message: 'This will alert VayGo safety with your current location.',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Send SOS', role: 'destructive', handler: () => this.sendSos() }
+      ]
+    });
+    await alert.present();
+  }
+
+  private sendSos() {
+    if (!this.activeRide) return;
+    const body: any = {
+      rideId: this.activeRide.rideId,
+      raisedBy: 'Driver',
+      driverId: getCurrentDriverId(),
+      lat: this.currentLat,
+      long: this.currentLng
+    };
+    this.api.post('safety/sos', body).subscribe({
+      next: () => { this.showToast('SOS sent. Help is on the way.', 'danger'); },
+      error: () => { this.showToast('Failed to send SOS. Try again.', 'danger'); }
+    });
+  }
+
+  private async showToast(message: string, color: string = 'dark') {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2500,
+      position: 'top',
+      color
+    });
+    await toast.present();
+  }
+
+  goEarnings() { this.router.navigate(['/earnings']); }
+  goHistory() { this.router.navigate(['/history']); }
 
   private onNewRideRequest(data: any) {
     if (this.activeRide) return;

@@ -1,0 +1,132 @@
+ion-content {
+  --background: linear-gradient(180deg, #3b0a18, #1a050b);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 48px 16px 12px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+  width: 40px;
+  cursor: pointer;
+}
+
+.page-title {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.spacer { width: 40px; }
+
+.body {
+  padding: 4px 16px 32px;
+}
+
+.state-msg, .empty {
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  font-size: 14px;
+  padding: 24px 0;
+}
+
+.ride-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ride-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 14px 16px;
+}
+
+.ride-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ride-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a050b;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.badge.completed { background: #e6f4ea; color: #1e7e34; }
+.badge.cancelled { background: #fdecea; color: #c0392b; }
+.badge.active    { background: #e8f0fe; color: #1a55c4; }
+.badge.other     { background: #f0f0f0; color: #666; }
+
+.ride-addr {
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot.pickup { background: #4caf50; }
+.dot.drop   { background: #8b1c2c; }
+
+.ride-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+}
+
+.ride-time {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.ride-fare {
+  font-size: 16px;
+  font-weight: 800;
+  color: #8b1c2c;
+}
+
+.ride-rating {
+  font-size: 12px;
+  color: #f57c00;
+  font-weight: 600;
+  margin-top: 6px;
+}

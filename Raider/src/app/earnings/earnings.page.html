@@ -1,0 +1,56 @@
+<ion-content [scrollY]="true">
+  <div class="screen">
+
+    <!-- HEADER -->
+    <div class="header">
+      <button class="back-btn" (click)="goHome()">‹</button>
+      <h1 class="page-title">Earnings</h1>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="body">
+
+      <!-- LOADING -->
+      <div class="state-msg" *ngIf="loading">Loading earnings…</div>
+
+      <ng-container *ngIf="!loading">
+        <!-- TODAY HERO -->
+        <div class="hero-card">
+          <p class="hero-label">Today's earnings</p>
+          <h2 class="hero-amount">₹{{ data?.todayEarnings || 0 }}</h2>
+          <p class="hero-sub">{{ data?.todayRides || 0 }} ride{{ (data?.todayRides || 0) === 1 ? '' : 's' }} today</p>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <p class="stat-label">This week</p>
+            <h3 class="stat-amount">₹{{ data?.weekEarnings || 0 }}</h3>
+            <p class="stat-sub">{{ data?.weekRides || 0 }} rides</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Lifetime</p>
+            <h3 class="stat-amount">₹{{ data?.totalEarnings || 0 }}</h3>
+            <p class="stat-sub">{{ data?.totalRides || 0 }} rides</p>
+          </div>
+        </div>
+
+        <!-- RECENT TRIPS -->
+        <div class="section-title">Recent trips</div>
+        <div class="empty" *ngIf="recent.length === 0">No recent trips yet.</div>
+
+        <div class="trip-list">
+          <div class="trip-row" *ngFor="let t of recent">
+            <div class="trip-info">
+              <div class="trip-num">#{{ t.rideNumber }}</div>
+              <div class="trip-addr">🏁 {{ t.dropAddress }}</div>
+              <div class="trip-time" *ngIf="t.endTime">{{ t.endTime | date:'MMM d, h:mm a' }}</div>
+            </div>
+            <div class="trip-fare">₹{{ t.finalFare }}</div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+</ion-content>

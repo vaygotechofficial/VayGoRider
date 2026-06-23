@@ -5,6 +5,9 @@
     <div class="header">
       <img src="assets/VayGoLogoWhite.png" class="header-logo" alt="VayGo" />
       <div class="header-right">
+        <button class="break-btn" *ngIf="isOnline" [class.active]="onBreak" (click)="toggleBreak()">
+          {{ onBreak ? 'End break' : 'Take a break' }}
+        </button>
         <div class="toggle-wrap" (click)="toggleStatus()">
           <span class="toggle-label" [class.online]="isOnline">
             {{ isOnline ? 'Online' : 'Offline' }}
@@ -21,6 +24,11 @@
     <div class="greeting">
       <p class="greet-sub">{{ greeting }}</p>
       <h2 class="greet-name">Hey, {{ riderName }}</h2>
+    </div>
+
+    <!-- BREAK BANNER -->
+    <div class="break-banner" *ngIf="onBreak && isOnline">
+      ☕ On break — not receiving rides
     </div>
 
     <!-- LOCATION DENIED -->
@@ -114,6 +122,9 @@
         <p class="otp-error" *ngIf="endRideError">{{ endRideError }}</p>
         <button class="go-online-btn" (click)="endRide()">End Ride</button>
       </ng-container>
+
+      <!-- SOS — available during the active ride -->
+      <button class="sos-btn" (click)="confirmSos()">🆘 Emergency SOS</button>
     </div>
 
     <!-- COMPLETED RIDE -->
@@ -151,13 +162,13 @@
         <img src="assets/VayGoLogoWhite.png" class="nav-logo" alt="Home" />
         <span class="nav-label">Home</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab==='earning'" (click)="setTab('earning')">
+      <button class="nav-item" (click)="goEarnings()">
         <span class="nav-svg">₹</span>
         <span class="nav-label">Earning</span>
       </button>
-      <button class="nav-item" [class.active]="activeTab==='notification'" (click)="setTab('notification')">
-        <span class="nav-svg">&#128276;</span>
-        <span class="nav-label">Alerts</span>
+      <button class="nav-item" (click)="goHistory()">
+        <span class="nav-svg">&#128338;</span>
+        <span class="nav-label">History</span>
       </button>
       <button class="nav-item" (click)="logout()">
         <span class="nav-svg">&#10148;</span>

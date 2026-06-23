@@ -1,0 +1,35 @@
+<ion-content [scrollY]="true">
+  <div class="screen">
+
+    <!-- HEADER -->
+    <div class="header">
+      <button class="back-btn" (click)="goHome()">‹</button>
+      <h1 class="page-title">Ride History</h1>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="body">
+      <div class="state-msg" *ngIf="loading">Loading history…</div>
+      <div class="empty" *ngIf="!loading && rides.length === 0">No rides yet.</div>
+
+      <div class="ride-list" *ngIf="!loading">
+        <div class="ride-card" *ngFor="let r of rides">
+          <div class="ride-top">
+            <span class="ride-num">#{{ r.rideNumber }}</span>
+            <span class="badge" [ngClass]="statusClass(r.rideStatus)">{{ r.rideStatus }}</span>
+          </div>
+
+          <div class="ride-addr"><span class="dot pickup"></span>{{ r.pickupAddress }}</div>
+          <div class="ride-addr"><span class="dot drop"></span>{{ r.dropAddress }}</div>
+
+          <div class="ride-foot">
+            <span class="ride-time" *ngIf="r.requestedTime">{{ r.requestedTime | date:'MMM d, y, h:mm a' }}</span>
+            <span class="ride-fare">₹{{ r.finalFare ?? r.estimatedFare }}</span>
+          </div>
+
+          <div class="ride-rating" *ngIf="r.rating">★ {{ r.rating }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

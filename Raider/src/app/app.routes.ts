@@ -52,4 +52,12 @@ export const routes: Routes = [
     path: 'home',
     loadComponent: () => import('./home/home.page').then(m => m.HomePage)
   },
+  {
+    path: 'earnings',
+    loadComponent: () => import('./earnings/earnings.page').then(m => m.EarningsPage)
+  },
+  {
+    path: 'history',
+    loadComponent: () => import('./history/history.page').then(m => m.HistoryPage)
+  },
 ];
