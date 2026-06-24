@@ -64,6 +64,11 @@ captures/
 # Google Services (e.g. APIs or Firebase)
 # google-services.json
 
+# Release signing secrets — never commit these
+keystore.properties
+*.keystore
+*.jks
+
 # Freeline
 freeline.py
 freeline/

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "290467658366",
+    "project_id": "vaygo-eaf7f",
+    "storage_bucket": "vaygo-eaf7f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290467658366:android:6044e683697b576b8f362f",
+        "android_client_info": {
+          "package_name": "com.vaygo.rider"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUoOPXf0_1rScZkdaM5k2knw1ObkEhPrg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290467658366:android:51d167cc9336cb308f362f",
+        "android_client_info": {
+          "package_name": "com.vaygo.user"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUoOPXf0_1rScZkdaM5k2knw1ObkEhPrg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
