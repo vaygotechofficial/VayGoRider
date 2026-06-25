@@ -2,10 +2,15 @@ import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { ApiService } from './api';
 import { SignalrService } from './signalr';
+import { PushNotificationsService } from './push-notifications.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private api: ApiService, private signalr: SignalrService) {}
+  constructor(
+    private api: ApiService,
+    private signalr: SignalrService,
+    private push: PushNotificationsService,
+  ) {}
 
   sendOtp(mobile: string, userType: string = 'rider'): Observable<any> {
     return this.api.post('auth/send-otp', { mobileNumber: mobile, userType });
@@ -23,12 +28,14 @@ export class AuthService {
             localStorage.setItem('driverId', String(userData.driverId));
             this.signalr.reconnect();
           }
+          this.push.syncToken();
         }
       })
     );
   }
 
   logout() {
+    this.push.unregister(); // tell backend to drop this device while the auth token is still present
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
     localStorage.removeItem('driverId');
