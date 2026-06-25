@@ -1,51 +1,98 @@
-ion-content {
+.auth-bg {
   --background: linear-gradient(180deg, #3b0a18, #1a050b);
 }
 
-.top-logo {
-  text-align: center;
-  padding-top: 60px;
+.auth-wrap {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
 }
 
-.top-logo img {
-  width: 50%;
-  max-width: 160px;
+.brand {
+  text-align: center;
+  margin-bottom: 26px;
+
+  img {
+    width: 250px;
+    height: 250px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
+
+  h1 {
+    color: #fff;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 12px 0 4px;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin: 0;
+  }
 }
 
 .card {
-  position: absolute;
-  bottom: 0;
   width: 100%;
-  background: #ffffff;
-  border-top-left-radius: 35px;
-  border-top-right-radius: 35px;
-  padding: 30px 20px;
-  box-shadow: 0px -10px 30px rgba(0,0,0,0.4);
-  text-align: center;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 
-.card h2 {
-  font-size: 22px;
-  color: #1a050b;
-}
-
-.card p {
+.field-label {
+  display: block;
   font-size: 13px;
-  color: #666;
-  margin-bottom: 20px;
+  font-weight: 600;
+  color: #1a050b;
+  margin-bottom: 8px;
 }
 
-.btn {
-  --background: linear-gradient(135deg, #8b1c2c, #3b0a18);
-  --color: #fff;
+.field {
+  --background: #f4f1f2;
   --border-radius: 12px;
-  font-weight: bold;
-  margin-top: 10px;
+  --padding-start: 14px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+
+  .prefix {
+    color: #8b1c2c;
+    font-weight: 700;
+    margin-right: 8px;
+  }
 }
 
-.btn-link {
+.submit {
   --background: linear-gradient(135deg, #8b1c2c, #3b0a18);
-  --color: #fff;
+  --background-activated: #3b0a18;
   --border-radius: 12px;
-  margin-top: 8px;
+  --color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  height: 48px;
+  margin-top: 4px;
+}
+
+ion-text[color="danger"] p {
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+
+.note {
+  font-size: 13px;
+  color: #777;
+  text-align: center;
+  margin: 16px 0 0;
+
+  .link {
+    color: #8b1c2c;
+    font-weight: 700;
+    cursor: pointer;
+  }
 }

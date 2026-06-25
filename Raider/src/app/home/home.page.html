@@ -123,6 +123,9 @@
         <button class="go-online-btn" (click)="endRide()">End Ride</button>
       </ng-container>
 
+      <!-- Cancel ride (with reason) — available once accepted, before completion -->
+      <button class="cancel-ride-btn" (click)="cancelRide()">Cancel ride</button>
+
       <!-- SOS — available during the active ride -->
       <button class="sos-btn" (click)="confirmSos()">🆘 Emergency SOS</button>
     </div>

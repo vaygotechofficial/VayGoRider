@@ -1,46 +1,47 @@
-<ion-content>
+<ion-content [fullscreen]="true" class="auth-bg">
+  <div class="auth-wrap">
 
-  <div class="top-logo">
-    <img src="assets/VayGoLogoWhite.png" alt="VayGo" />
+    <div class="brand">
+      <img src="assets/VayGoLogoWhite.png" alt="VayGo" />
+      <h1>Welcome VayGo Rider</h1>
+      <p>Sign in to continue</p>
+    </div>
+
+    <div class="card">
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
+
+        <label class="field-label">Mobile number</label>
+        <ion-item lines="none" class="field">
+          <span class="prefix">+91</span>
+          <ion-input
+            type="tel"
+            inputmode="numeric"
+            maxlength="10"
+            formControlName="mobile"
+            placeholder="10-digit number">
+          </ion-input>
+        </ion-item>
+
+        <ion-text color="danger"
+          *ngIf="loginForm.get('mobile')?.touched && loginForm.get('mobile')?.invalid">
+          <p *ngIf="loginForm.get('mobile')?.errors?.['required']">Mobile number is required</p>
+          <p *ngIf="loginForm.get('mobile')?.errors?.['pattern']">Enter valid 10-digit number</p>
+        </ion-text>
+
+        <ion-text color="danger" *ngIf="errormessage">
+          <p class="ion-text-center">{{ errormessage }}</p>
+        </ion-text>
+
+        <ion-button expand="block" class="submit" type="submit">
+          Send OTP
+        </ion-button>
+      </form>
+
+      <p class="note">
+        Don't have an account?
+        <a class="link" (click)="goToRegister()">Create one</a>
+      </p>
+    </div>
+
   </div>
-
-  <div class="card">
-
-    <h2>Welcome</h2>
-    <p>Login with your mobile number</p>
-
-    <form [formGroup]="loginForm" (ngSubmit)="login()">
-
-      <ion-item fill="outline">
-        <ion-input
-          type="tel"
-          inputmode="numeric"
-          maxlength="10"
-          formControlName="mobile"
-          placeholder="Enter mobile number">
-        </ion-input>
-      </ion-item>
-
-      <ion-text color="danger"
-        *ngIf="loginForm.get('mobile')?.touched && loginForm.get('mobile')?.invalid">
-        <p *ngIf="loginForm.get('mobile')?.errors?.['required']">Mobile number is required</p>
-        <p *ngIf="loginForm.get('mobile')?.errors?.['pattern']">Enter valid 10-digit number</p>
-      </ion-text>
-
-      <ion-text color="danger" *ngIf="errormessage">
-        <p class="ion-text-center">{{ errormessage }}</p>
-      </ion-text>
-
-      <ion-button expand="block" class="btn" type="submit">
-        Login
-      </ion-button>
-
-    </form>
-
-    <ion-button expand="block" class="btn-link" (click)="goToRegister()">
-      Create New Account
-    </ion-button>
-
-  </div>
-
 </ion-content>

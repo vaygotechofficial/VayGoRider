@@ -49,6 +49,8 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   endRideError = '';
   locationDenied = false;
 
+  cancelReasons: string[] = [];
+
   private gmap!: google.maps.Map;
   private riderMarker!: google.maps.Marker;
   private pickupMarker?: google.maps.Marker;
@@ -94,6 +96,11 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         this.vehicleType = profile?.vehicle?.vehicleType || '';
         this.vehicleNumber = profile?.vehicle?.vehicleNumber || '';
       },
+      error: () => {}
+    });
+
+    this.api.get('rider/cancel-reasons').subscribe({
+      next: (reasons) => { this.cancelReasons = Array.isArray(reasons) ? reasons : []; },
       error: () => {}
     });
   }
@@ -341,6 +348,57 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.clearCountdown();
     this.pendingRide = null;
     this.clearRideMarkers();
+  }
+
+  // Cancel a ride the driver already accepted (Accepted or Started), with a reason.
+  async cancelRide() {
+    if (!this.activeRide) return;
+
+    const reasons = this.cancelReasons.length
+      ? this.cancelReasons
+      : ['Passenger not at pickup', 'Cannot reach passenger', 'Vehicle issue / emergency', 'Other'];
+
+    const alert = await this.alertCtrl.create({
+      header: 'Cancel ride?',
+      message: 'Select a reason for cancelling this ride.',
+      inputs: reasons.map((reason, i) => ({
+        name: 'reason',
+        type: 'radio' as const,
+        label: reason,
+        value: reason,
+        checked: i === 0
+      })),
+      buttons: [
+        { text: 'Keep ride', role: 'cancel' },
+        {
+          text: 'Cancel ride',
+          role: 'destructive',
+          handler: (reason: string) => { this.sendDriverCancel(reason); }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  private sendDriverCancel(reason: string) {
+    if (!this.activeRide) return;
+    this.api.post('rider/cancel-ride', {
+      rideId: this.activeRide.rideId,
+      reason: reason || 'Cancelled by driver',
+      driverId: getCurrentDriverId()
+    }).subscribe({
+      next: (res) => {
+        this.showToast(res?.message || 'Ride cancelled', 'danger');
+        this.activeRide = null;
+        this.otpInput = '';
+        localStorage.removeItem('riderActiveRide');
+        this.clearRideMarkers();
+        this.clearRoute();
+      },
+      error: (err: any) => {
+        this.showToast(err?.error?.message || 'Failed to cancel ride', 'danger');
+      }
+    });
   }
 
   startRide() {
