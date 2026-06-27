@@ -34,7 +34,7 @@ ion-content {
 }
 
 .step.active {
-  background: #8b1c2c;
+  background: #650015;
   color: #fff;
 }
 
@@ -91,7 +91,7 @@ ion-content {
 }
 
 .plan-card {
-  border: 2px solid #8b1c2c;
+  border: 2px solid #650015;
   border-radius: 16px;
   padding: 16px;
   text-align: left;
@@ -105,7 +105,7 @@ ion-content {
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #8b1c2c, #3b0a18);
+  background: linear-gradient(135deg, #650015, #3b0a18);
   color: #fff;
   font-size: 11px;
   font-weight: 600;
@@ -136,7 +136,7 @@ ion-content {
 .amount {
   font-size: 22px;
   font-weight: 700;
-  color: #8b1c2c;
+  color: #650015;
 }
 
 .period {
@@ -166,7 +166,7 @@ ion-content {
 
 
 .btn {
-  --background: linear-gradient(135deg, #8b1c2c, #3b0a18);
+  --background: linear-gradient(135deg, #650015, #3b0a18);
   --color: #fff;
   --border-radius: 12px;
   margin-top: 8px;

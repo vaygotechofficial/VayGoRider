@@ -36,7 +36,7 @@ ion-content {
 }
 
 .btn {
-  --background: linear-gradient(135deg, #8b1c2c, #3b0a18);
+  --background: linear-gradient(135deg, #650015, #3b0a18);
   --color: #fff;
   --border-radius: 12px;
   font-weight: bold;
@@ -44,7 +44,7 @@ ion-content {
 }
 
 .btn-change {
-  --background: linear-gradient(135deg, #8b1c2c, #3b0a18);
+  --background: linear-gradient(135deg, #650015, #3b0a18);
   --color: #fff;
   --border-radius: 12px;
   margin-bottom: 4px;
@@ -74,9 +74,9 @@ ion-content {
 }
 
 .otp-box:focus {
-  border-color: #8b1c2c;
+  border-color: #650015;
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(139, 28, 44, 0.15);
+  box-shadow: 0 0 0 3px rgba(101, 0, 21, 0.15);
 }
 
 .otp-box::-webkit-outer-spin-button,
@@ -92,7 +92,7 @@ ion-content {
 }
 
 .btn-resend {
-  --background: linear-gradient(135deg, #8b1c2c, #3b0a18);
+  --background: linear-gradient(135deg, #650015, #3b0a18);
   --color: #fff;
   --border-radius: 12px;
 }

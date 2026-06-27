@@ -1,2 +1,13 @@
 // For information on how to create your own theme, please refer to:
 // https://ionicframework.com/docs/theming/
+
+/* VayGo brand primary — standard maroon #650015 across all apps.
+   Loaded after @ionic/angular/css/core.css (via global.scss), so it wins. */
+:root {
+  --ion-color-primary:          #650015;
+  --ion-color-primary-rgb:      101, 0, 21;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade:    #590012;
+  --ion-color-primary-tint:     #741a2c;
+}

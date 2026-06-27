@@ -491,7 +491,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           scale: 10,
-          fillColor: '#8b1c2c',
+          fillColor: '#650015',
           fillOpacity: 1,
           strokeColor: '#fff',
           strokeWeight: 3
@@ -524,7 +524,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.directionsRenderer = new google.maps.DirectionsRenderer({
       map: this.gmap,
       suppressMarkers: true,
-      polylineOptions: { strokeColor: '#8b1c2c', strokeWeight: 4 }
+      polylineOptions: { strokeColor: '#650015', strokeWeight: 4 }
     });
     ds.route({
       origin: { lat: fromLat, lng: fromLng },
