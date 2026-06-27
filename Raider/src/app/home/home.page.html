@@ -31,6 +31,10 @@
       ☕ On break — not receiving rides
     </div>
 
+    <div class="service-warning" *ngIf="!serviceable">
+      🚫 {{ serviceMessage || 'We are not serving this area' }}
+    </div>
+
     <!-- LOCATION DENIED -->
     <div class="location-gate" *ngIf="locationDenied">
       <div class="location-gate-icon">📍</div>

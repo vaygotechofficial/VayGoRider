@@ -52,6 +52,10 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   cancelReasons: string[] = [];
   arrivedSent = false;
 
+  // Service-area geofence for the driver's current location.
+  serviceable = true;
+  serviceMessage = '';
+
   private gmap!: google.maps.Map;
   private riderMarker!: google.maps.Marker;
   private pickupMarker?: google.maps.Marker;
@@ -155,6 +159,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
     this.currentLat = center.lat;
     this.currentLng = center.lng;
+    this.checkServiceArea();
 
     if (this.activeRide) {
       this.showRideMarkers(this.activeRide);
@@ -214,6 +219,12 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.currentLat == null || this.currentLng == null) return;
 
+    // Don't let drivers go online outside a serviceable city.
+    if (!this.serviceable) {
+      this.showToast(this.serviceMessage || 'We are not serving this area', 'danger');
+      return;
+    }
+
     this.api.post('rider/go-online', {
       currentLat: this.currentLat,
       currentLong: this.currentLng,
@@ -221,6 +232,20 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     }).subscribe({
       next: () => { this.isOnline = true; },
       error: (err) => { console.error('go-online failed:', err?.error?.message || err); }
+    });
+  }
+
+  // Check whether the driver's current location is inside a serviceable city.
+  private checkServiceArea() {
+    if (this.currentLat == null || this.currentLng == null) return;
+    this.api.get('service-areas/check', { lat: this.currentLat, lng: this.currentLng }).subscribe({
+      next: (r: any) => {
+        this.ngZone.run(() => {
+          this.serviceable = r?.serviceable !== false;
+          this.serviceMessage = this.serviceable ? '' : (r?.message || 'We are not serving this area');
+        });
+      },
+      error: () => { this.serviceable = true; this.serviceMessage = ''; }
     });
   }
 

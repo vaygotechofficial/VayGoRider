@@ -544,3 +544,15 @@ ion-content {
   margin: 0 0 24px;
   line-height: 1.5;
 }
+
+.service-warning {
+  margin: 0 18px 8px;
+  background: rgba(229,57,53,0.18);
+  border: 1px solid rgba(229,57,53,0.5);
+  color: #ffb3b0;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
