@@ -50,6 +50,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   locationDenied = false;
 
   cancelReasons: string[] = [];
+  arrivedSent = false;
 
   private gmap!: google.maps.Map;
   private riderMarker!: google.maps.Marker;
@@ -323,6 +324,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         this.clearCountdown();
         this.activeRide = { ...this.pendingRide, rideStatus: 'Accepted' };
         this.pendingRide = null;
+        this.arrivedSent = false;
         this.saveActiveRide();
         this.drawRoute(
           this.currentLat!, this.currentLng!,
@@ -348,6 +350,15 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.clearCountdown();
     this.pendingRide = null;
     this.clearRideMarkers();
+  }
+
+  // Tell the passenger the driver has reached the pickup point.
+  markArrived() {
+    if (!this.activeRide || this.arrivedSent) return;
+    this.api.post(`rider/arrived/${this.activeRide.rideId}?driverId=${getCurrentDriverId()}`, {}).subscribe({
+      next: (res) => { this.arrivedSent = true; this.showToast(res?.message || 'Passenger notified'); },
+      error: (err: any) => { this.showToast(err?.error?.message || 'Could not notify passenger', 'danger'); }
+    });
   }
 
   // Cancel a ride the driver already accepted (Accepted or Started), with a reason.

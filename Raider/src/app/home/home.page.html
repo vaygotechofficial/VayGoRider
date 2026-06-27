@@ -108,6 +108,10 @@
 
       <!-- OTP entry — shown before ride starts -->
       <ng-container *ngIf="activeRide.rideStatus === 'Accepted'">
+        <!-- Let the passenger know you've reached the pickup -->
+        <button class="arrived-btn" (click)="markArrived()" [disabled]="arrivedSent">
+          {{ arrivedSent ? 'Passenger notified ✓' : "I've arrived at pickup" }}
+        </button>
         <p class="otp-label">Ask passenger for 4-digit trip code</p>
         <div class="otp-row">
           <input class="otp-input" type="text" maxlength="4" [(ngModel)]="otpInput"
