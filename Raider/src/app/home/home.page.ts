@@ -7,6 +7,7 @@ import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { Subscription } from 'rxjs';
 import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { ApiService } from '../services/api';
 import { SignalrService, getCurrentDriverId } from '../services/signalr';
 import { environment } from 'src/environments/environment';
@@ -37,6 +38,8 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   vehicleType = '';
   vehicleNumber = '';
   activeTab = 'home';
+  menuOpen = false;
+  appVersion = environment.appVersion;
 
   pendingRide: any = null;
   countdown = environment.acceptTimeoutSeconds;
@@ -63,6 +66,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   private directionsRenderer?: google.maps.DirectionsRenderer;
   private googleReady = false;
   private watchId: string | null = null;
+  private appResumeHandle?: { remove: () => Promise<void> };
 
   private currentLat: number | null = null;
   private currentLng: number | null = null;
@@ -93,6 +97,14 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
     this.restoreActiveRide();
 
+    // Reconcile the active ride with the server on startup, on SignalR reconnect, and on app
+    // resume — so a ride the passenger cancelled (or that completed) while we missed the realtime
+    // event doesn't keep showing as "live".
+    this.subs.push(this.signalr.reconnected$.subscribe(() => this.syncActiveRide()));
+    this.syncActiveRide();
+    App.addListener('resume', () => this.ngZone.run(() => this.syncActiveRide()))
+      .then(h => { this.appResumeHandle = h; });
+
     this.api.get('rider/profile').subscribe({
       next: (profile) => {
         this.riderName = profile?.fullName || 'Driver';
@@ -122,6 +134,29 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     } else {
       localStorage.removeItem('riderActiveRide');
     }
+  }
+
+  // Ask the server for our real active ride and reconcile local state with it.
+  private syncActiveRide() {
+    const driverId = getCurrentDriverId();
+    this.api.get('rider/active-ride', { driverId }).subscribe({
+      next: (ride: any) => {
+        if (ride && (ride.rideStatus === 'Accepted' || ride.rideStatus === 'Started')) {
+          this.activeRide = ride;
+          this.saveActiveRide();
+          if (this.googleReady) this.showRideMarkers(ride);
+        } else if (this.activeRide) {
+          // Server has no active ride for us (e.g. the passenger cancelled while the app was
+          // backgrounded / disconnected). Drop the stale "live" ride.
+          this.activeRide = null;
+          this.otpInput = '';
+          localStorage.removeItem('riderActiveRide');
+          this.clearRideMarkers();
+          this.showToast('This ride is no longer active.');
+        }
+      },
+      error: () => {}
+    });
   }
 
   ngAfterViewInit() {
@@ -184,6 +219,9 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         if (this.isOnline || this.activeRide) {
           this.signalr.updateLocation(lat, lng);
         }
+
+        // Keep the on-screen navigation following the driver toward pickup/drop.
+        if (this.activeRide) this.refreshNav(lat, lng);
       });
     }).then(id => { this.watchId = id; });
   }
@@ -301,6 +339,12 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
   goEarnings() { this.router.navigate(['/earnings']); }
   goHistory() { this.router.navigate(['/history']); }
+  goSupport() { this.router.navigate(['/support']); }
+
+  // Open the in-ride chat with the passenger (keyed by ride id).
+  openChat() {
+    if (this.activeRide?.rideId) this.router.navigate(['/chat', this.activeRide.rideId]);
+  }
 
   private onNewRideRequest(data: any) {
     if (this.activeRide) return;
@@ -544,13 +588,15 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
   private drawRoute(fromLat: number, fromLng: number, toLat: number, toLng: number) {
     if (!this.googleReady || !this.gmap) return;
-    this.clearRoute();
     const ds = new google.maps.DirectionsService();
-    this.directionsRenderer = new google.maps.DirectionsRenderer({
-      map: this.gmap,
-      suppressMarkers: true,
-      polylineOptions: { strokeColor: '#650015', strokeWeight: 4 }
-    });
+    // Reuse one renderer so the line updates smoothly as the driver moves (no flicker).
+    if (!this.directionsRenderer) {
+      this.directionsRenderer = new google.maps.DirectionsRenderer({
+        map: this.gmap,
+        suppressMarkers: true,
+        polylineOptions: { strokeColor: '#650015', strokeWeight: 4 }
+      });
+    }
     ds.route({
       origin: { lat: fromLat, lng: fromLng },
       destination: { lat: toLat, lng: toLng },
@@ -558,6 +604,31 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     }, (result, status) => {
       if (status === 'OK') this.directionsRenderer!.setDirections(result);
     });
+  }
+
+  // Live turn-by-turn: re-route from the driver's current position to the right target
+  // (pickup while Accepted, drop once Started). Throttled by distance to spare the API,
+  // but always re-routes immediately when the ride stage changes (pickup → drop).
+  private lastNavLat: number | null = null;
+  private lastNavLng: number | null = null;
+  private lastNavStatus: string | null = null;
+
+  private refreshNav(lat: number, lng: number) {
+    const status = this.activeRide?.rideStatus;
+    if (status !== 'Accepted' && status !== 'Started') return;
+
+    const stageChanged = status !== this.lastNavStatus;
+    if (!stageChanged && this.lastNavLat != null && this.lastNavLng != null) {
+      if (this.haversineM(lat, lng, this.lastNavLat, this.lastNavLng) < 40) return;
+    }
+
+    const toLat = status === 'Accepted' ? Number(this.activeRide.pickupLat) : Number(this.activeRide.dropLat);
+    const toLng = status === 'Accepted' ? Number(this.activeRide.pickupLong) : Number(this.activeRide.dropLong);
+    this.drawRoute(lat, lng, toLat, toLng);
+
+    this.lastNavLat = lat;
+    this.lastNavLng = lng;
+    this.lastNavStatus = status;
   }
 
   private clearRoute() {
@@ -577,13 +648,52 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     return VEHICLE_ICONS[vehicleType] || '🚗';
   }
 
+  // ── Ride-request trip metrics (computed from the driver's current location) ──
+  // Distance from the driver to the pickup point.
+  pickupDistanceKm(ride: any): number | null {
+    if (!ride || this.currentLat == null || this.currentLng == null) return null;
+    if (ride.pickupLat == null || ride.pickupLong == null) return null;
+    return this.haversineM(this.currentLat, this.currentLng,
+                           Number(ride.pickupLat), Number(ride.pickupLong)) / 1000;
+  }
+
+  // Trip distance from pickup to drop.
+  tripDistanceKm(ride: any): number | null {
+    if (!ride || ride.pickupLat == null || ride.dropLat == null) return null;
+    return this.haversineM(Number(ride.pickupLat), Number(ride.pickupLong),
+                           Number(ride.dropLat), Number(ride.dropLong)) / 1000;
+  }
+
+  // Rough ETA in minutes for a distance at ~30 km/h city average (matches backend ETA).
+  etaMin(km: number | null): number | null {
+    if (km == null) return null;
+    return Math.max(1, Math.ceil((km / 30) * 60));
+  }
+
+  fmtKm(km: number | null): string {
+    if (km == null) return '--';
+    return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+  }
+
   setTab(tab: string) { this.activeTab = tab; }
+
+  toggleMenu() { this.menuOpen = !this.menuOpen; }
 
   logout() {
     this.clearCountdown();
     this.subs.forEach(s => s.unsubscribe());
     this.signalr.disconnect();
     if (this.watchId !== null) Geolocation.clearWatch({ id: this.watchId });
+
+    // Mark the driver offline server-side BEFORE clearing the session. A logged-out
+    // driver who stays "online" gets assigned ride offers over a dead connection,
+    // and that stale assignment then blocks the ride from being re-offered when the
+    // driver logs back in (they'd see no new request). Best-effort fire-and-forget.
+    const driverId = getCurrentDriverId();
+    if (driverId) {
+      this.api.post('rider/go-offline', { driverId }).subscribe({ next: () => {}, error: () => {} });
+    }
+
     localStorage.removeItem('token');
     localStorage.removeItem('driverId');
     this.router.navigate(['/login']);
@@ -594,6 +704,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.subs.forEach(s => s.unsubscribe());
     this.signalr.disconnect();
     if (this.watchId !== null) Geolocation.clearWatch({ id: this.watchId });
+    this.appResumeHandle?.remove();
     this.clearRoute();
   }
 }

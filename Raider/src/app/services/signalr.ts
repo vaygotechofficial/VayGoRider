@@ -17,6 +17,8 @@ export class SignalrService {
 
   newRideRequest$ = new Subject<any>();
   rideCancelled$ = new Subject<any>();
+  chatMessage$ = new Subject<any>();
+  reconnected$ = new Subject<void>();
 
   connect(): void {
     if (this.hubConnection) return;
@@ -41,6 +43,11 @@ export class SignalrService {
 
     this.hubConnection.on('NewRideRequest', (data) => this.newRideRequest$.next(data));
     this.hubConnection.on('RideCancelled', (data) => this.rideCancelled$.next(data));
+    this.hubConnection.on('ChatMessage', (data) => this.chatMessage$.next(data));
+
+    // After a dropped connection re-establishes, realtime events sent in the gap were lost —
+    // signal listeners so they can reconcile state (e.g. re-check the active ride).
+    this.hubConnection.onreconnected(() => this.reconnected$.next());
 
     this.hubConnection.start().catch(err => console.error('SignalR connection error:', err));
   }

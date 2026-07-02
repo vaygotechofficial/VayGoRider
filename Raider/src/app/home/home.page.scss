@@ -3,6 +3,7 @@ ion-content {
 }
 
 .screen {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -153,6 +154,19 @@ ion-content {
   cursor: pointer;
 }
 
+.chat-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: rgba(101, 0, 21, 0.06);
+  color: #650015;
+  border: 1.5px solid rgba(101, 0, 21, 0.4);
+  border-radius: 14px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .arrived-btn {
   width: 100%;
   margin-bottom: 10px;
@@ -169,19 +183,6 @@ ion-content {
   &:disabled { background: #2e7d32; opacity: 1; }
 }
 
-.avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  border: 2px solid rgba(255,255,255,0.4);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-}
 
 /* ── MAP ── */
 .map-area {
@@ -336,15 +337,69 @@ ion-content {
 .price { font-size: 20px; font-weight: 800; color: #1a050b; }
 .tip   { font-size: 11px; color: #4caf50; font-weight: 600; }
 
-.swipe-row {
+/* Accept / Ignore action buttons for an incoming ride offer */
+.order-meta {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  background: #f5f5f5;
-  border-radius: 50px;
-  padding: 6px 20px 6px 6px;
-  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 2px;
 }
+
+.meta-chip {
+  background: rgba(101, 0, 21, 0.07);
+  color: #650015;
+  border: 1px solid rgba(101, 0, 21, 0.18);
+  border-radius: 999px;
+  padding: 6px 11px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.meta-chip.fare-chip {
+  background: rgba(46, 125, 50, 0.10);
+  color: #2e7d32;
+  border-color: rgba(46, 125, 50, 0.3);
+  white-space: normal;
+}
+
+.price-sub {
+  display: block;
+  font-size: 10px;
+  color: #8a7d80;
+  font-weight: 600;
+  text-align: right;
+}
+
+.offer-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.btn-accept {
+  flex: 1;
+  height: 50px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #650015, #3b0a18);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-accept:active { opacity: 0.9; }
+.btn-ignore {
+  flex: 1;
+  height: 50px;
+  border: 1.5px solid #d9d2d4;
+  border-radius: 14px;
+  background: #fff;
+  color: #555;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-ignore:active { background: #f3f3f3; }
 
 .accept-btn {
   width: 48px; height: 48px;
@@ -413,57 +468,79 @@ ion-content {
 .waiting-msg { font-size: 15px; font-weight: 600; color: #555; margin: 0; }
 
 /* ── BOTTOM NAV ── */
-.bottom-nav {
-  display: flex;
-  background: linear-gradient(180deg, #3b0a18, #1a050b);
-  border-top: 1px solid rgba(101, 0, 21,0.4);
-  padding: 8px 0 24px;
-  z-index: 30;
-}
-
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  background: none;
+/* ── SLIDE-OUT MENU (left drawer) ── */
+.menu-btn {
+  background: rgba(255,255,255,0.15);
   border: none;
+  color: #fff;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 20px;
   cursor: pointer;
-  padding: 4px 0;
+  flex-shrink: 0;
 }
 
-.nav-logo {
-  width: 28px;
-  height: 22px;
-  object-fit: contain;
-  opacity: 0.5;
+.menu-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 40;
 }
 
-.nav-item.active .nav-logo {
-  opacity: 1;
+.side-menu {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 76%;
+  max-width: 300px;
+  background: linear-gradient(180deg, #3b0a18, #1a050b);
+  z-index: 50;
+  transform: translateX(-105%);
+  transition: transform 0.28s ease;
+  padding: 56px 16px 24px;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
 }
 
-.nav-svg {
-  font-size: 18px;
-  color: rgba(255,255,255,0.5);
-  font-weight: 700;
-  line-height: 1;
-}
+.side-menu.open { transform: translateX(0); }
 
-.nav-item.active .nav-svg {
+.side-menu-title {
+  font-size: 22px;
+  font-weight: 800;
   color: #fff;
+  margin-bottom: 20px;
+  padding-left: 6px;
 }
 
-.nav-label {
-  font-size: 10px;
-  color: rgba(255,255,255,0.5);
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: rgba(255,255,255,0.06);
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.menu-logout-icon { flex-shrink: 0; }
+
+.menu-version {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 24px;
+  text-align: center;
+  font-size: 12px;
   font-weight: 500;
-}
-
-.nav-item.active .nav-label {
-  color: #fff;
-  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  margin: 0;
+  letter-spacing: 0.3px;
 }
 
 .otp-label {

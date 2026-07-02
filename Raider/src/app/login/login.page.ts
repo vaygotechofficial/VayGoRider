@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonContent, IonItem, IonInput, IonButton, IonText, LoadingController } from '@ionic/angular/standalone';
 import { AuthService } from '../services/auth.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +17,7 @@ export class LoginPage {
 
   loginForm;
   errormessage = '';
+  appVersion = environment.appVersion;
 
   constructor(
     private fb: FormBuilder,

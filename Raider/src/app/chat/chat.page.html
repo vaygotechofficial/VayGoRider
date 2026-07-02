@@ -1,0 +1,39 @@
+<ion-content [scrollY]="false">
+  <div class="chat-screen">
+
+    <!-- HEADER -->
+    <div class="chat-header">
+      <button class="back-btn" (click)="back()" aria-label="Back">‹</button>
+      <div class="chat-title">
+        <span class="title">Chat with passenger</span>
+        <span class="subtitle">Ride #{{ rideId }}</span>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="chat-body" #scrollBody>
+      <div class="empty" *ngIf="!messages.length">
+        Message your passenger about pickup details for this ride.
+      </div>
+      <div class="row" *ngFor="let m of messages" [class.mine]="mine(m)" [class.theirs]="!mine(m)">
+        <div class="bubble">
+          <div class="msg-text">{{ m.message }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK-REPLY SUGGESTIONS -->
+    <div class="chat-suggestions">
+      <button class="suggestion-chip" *ngFor="let s of suggestions"
+              [disabled]="sending" (click)="quick(s)">{{ s }}</button>
+    </div>
+
+    <!-- INPUT -->
+    <div class="chat-input">
+      <input type="text" [(ngModel)]="input" (keyup.enter)="send()"
+             placeholder="Type a message…" autocomplete="off" />
+      <button class="send-btn" (click)="send()" [disabled]="!input.trim() || sending" aria-label="Send">➤</button>
+    </div>
+
+  </div>
+</ion-content>

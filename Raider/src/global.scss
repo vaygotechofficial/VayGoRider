@@ -32,6 +32,12 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 /* @import '@ionic/angular/css/palettes/dark.system.css'; */
 
+/* This app uses a fixed light theme. Force light rendering so native form controls
+   (inputs, textareas, date/time pickers) never paint with a black background / invisible
+   text on dark-mode devices. */
+:root { color-scheme: light; }
+input, textarea, select { color-scheme: light; }
+
 /* VayGo map pin (Leaflet divIcon — must be global) */
 .vaygo-pin {
   width: 52px;

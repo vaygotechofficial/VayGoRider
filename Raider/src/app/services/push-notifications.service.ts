@@ -122,8 +122,27 @@ export class PushNotificationsService {
     );
   }
 
-  // Navigate based on the notification's data.type. Home reflects the current ride state.
+  // Route a notification tap to the screen that best matches its data.type.
   private handleTap(data: any): void {
-    this.router.navigateByUrl('/home');
+    const type = data?.type;
+
+    // Chat opens the specific ride's conversation.
+    if (type === 'ChatMessage' && data?.rideId) {
+      this.router.navigateByUrl('/chat/' + data.rideId);
+      return;
+    }
+
+    switch (type) {
+      case 'IssueUpdated':            // admin replied to a complaint
+        this.router.navigateByUrl('/support');
+        return;
+      case 'BonusEarned':             // incentive / payout
+        this.router.navigateByUrl('/earnings');
+        return;
+      default:
+        // Ride lifecycle (NewRideRequest, RideAcceptedDriver, OtpPrompt, RideStarted,
+        // RideCompleted, RideCancelled, PaymentReceived, …) surfaces on the live home screen.
+        this.router.navigateByUrl('/home');
+    }
   }
 }

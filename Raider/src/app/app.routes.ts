@@ -60,4 +60,12 @@ export const routes: Routes = [
     path: 'history',
     loadComponent: () => import('./history/history.page').then(m => m.HistoryPage)
   },
+  {
+    path: 'support',
+    loadComponent: () => import('./support/support.page').then(m => m.SupportPage)
+  },
+  {
+    path: 'chat/:rideId',
+    loadComponent: () => import('./chat/chat.page').then(m => m.ChatPage)
+  },
 ];

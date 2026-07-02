@@ -1,0 +1,57 @@
+<ion-content [scrollY]="false">
+  <div class="support-screen">
+
+    <!-- HEADER -->
+    <div class="chat-header">
+      <button class="back-btn" (click)="back()" aria-label="Back">‹</button>
+      <div class="chat-title">
+        <span class="title">VayGo Driver Support</span>
+        <span class="subtitle">Help &amp; complaints · replies instantly</span>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="chat-body" #scrollBody>
+      <ng-container *ngFor="let m of messages">
+        <div class="row" [class.user]="m.from === 'user'" [class.bot]="m.from === 'bot'">
+          <div class="bubble">
+            <div class="msg-text" *ngIf="m.text">{{ m.text }}</div>
+
+            <!-- complaint tracking list -->
+            <div class="complaints" *ngIf="m.complaints && m.complaints.length">
+              <div class="complaint-card" *ngFor="let c of m.complaints">
+                <div class="cc-top">
+                  <span class="cc-subject">{{ c.subject || 'Complaint' }}</span>
+                  <span class="status-pill" [ngClass]="statusClass(c.status)">{{ c.status }}</span>
+                </div>
+                <div class="cc-meta">#{{ c.issueId }} · {{ c.category }}</div>
+                <div class="cc-desc" *ngIf="c.description">{{ c.description }}</div>
+                <div class="cc-resp" *ngIf="c.adminResponse">↳ {{ c.adminResponse }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- quick replies under a bot message -->
+        <div class="chips" *ngIf="m.from === 'bot' && m.quickReplies && m.quickReplies.length">
+          <button class="chip" *ngFor="let q of m.quickReplies" (click)="tapChip(q)">{{ q.label }}</button>
+        </div>
+      </ng-container>
+
+      <!-- typing indicator -->
+      <div class="row bot" *ngIf="botTyping">
+        <div class="bubble typing">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="chat-input">
+      <input type="text" [(ngModel)]="input" (keyup.enter)="send()"
+             placeholder="Type your message…" autocomplete="off" />
+      <button class="send-btn" (click)="send()" [disabled]="!input.trim()" aria-label="Send">➤</button>
+    </div>
+
+  </div>
+</ion-content>

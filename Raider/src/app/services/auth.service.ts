@@ -36,6 +36,13 @@ export class AuthService {
 
   logout() {
     this.push.unregister(); // tell backend to drop this device while the auth token is still present
+    // Mark the driver offline so a logged-out driver isn't treated as available for
+    // ride matching (otherwise offers go to a dead connection and block re-offer on
+    // re-login). Best-effort; runs while the auth token is still present.
+    const driverId = localStorage.getItem('driverId');
+    if (driverId) {
+      this.api.post('rider/go-offline', { driverId: Number(driverId) }).subscribe({ next: () => {}, error: () => {} });
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
     localStorage.removeItem('driverId');
