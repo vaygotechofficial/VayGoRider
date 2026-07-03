@@ -692,26 +692,26 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     return VEHICLE_ICONS[vehicleType] || '🚗';
   }
 
-  // ── Ride-request trip metrics (computed from the driver's current location) ──
-  // Distance from the driver to the pickup point.
+  // ── Ride-request trip metrics — REAL road distance/ETA from OSRM, sent by the API in the
+  // offer payload. The app no longer recomputes these with haversine, so they match Google. ──
+  // Distance from the driver to the pickup point (km).
   pickupDistanceKm(ride: any): number | null {
-    if (!ride || this.currentLat == null || this.currentLng == null) return null;
-    if (ride.pickupLat == null || ride.pickupLong == null) return null;
-    return this.haversineM(this.currentLat, this.currentLng,
-                           Number(ride.pickupLat), Number(ride.pickupLong)) / 1000;
+    return ride?.pickupDistanceKm ?? null;
   }
 
-  // Trip distance from pickup to drop.
+  // Trip distance from pickup to drop (km).
   tripDistanceKm(ride: any): number | null {
-    if (!ride || ride.pickupLat == null || ride.dropLat == null) return null;
-    return this.haversineM(Number(ride.pickupLat), Number(ride.pickupLong),
-                           Number(ride.dropLat), Number(ride.dropLong)) / 1000;
+    return ride?.tripDistanceKm ?? null;
   }
 
-  // Rough ETA in minutes for a distance at ~30 km/h city average (matches backend ETA).
-  etaMin(km: number | null): number | null {
-    if (km == null) return null;
-    return Math.max(1, Math.ceil((km / 30) * 60));
+  // OSRM drive time (minutes) driver -> pickup.
+  pickupEtaMin(ride: any): number | null {
+    return ride?.pickupEtaMin ?? null;
+  }
+
+  // OSRM drive time (minutes) pickup -> drop.
+  tripEtaMin(ride: any): number | null {
+    return ride?.tripEtaMin ?? null;
   }
 
   fmtKm(km: number | null): string {

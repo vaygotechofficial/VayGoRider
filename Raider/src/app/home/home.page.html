@@ -107,10 +107,10 @@
           💰 Ride ₹{{ pendingRide.rideCharge }} + Pickup ₹{{ pendingRide.pickupCharge }}
         </span>
         <span class="meta-chip" *ngIf="pickupDistanceKm(pendingRide) !== null">
-          🧭 {{ fmtKm(pickupDistanceKm(pendingRide)) }} · {{ etaMin(pickupDistanceKm(pendingRide)) }} min to pickup
+          🧭 {{ fmtKm(pickupDistanceKm(pendingRide)) }}<span *ngIf="pickupEtaMin(pendingRide) !== null"> · {{ pickupEtaMin(pendingRide) }} min</span> to pickup
         </span>
         <span class="meta-chip" *ngIf="tripDistanceKm(pendingRide) !== null">
-          🛣️ {{ fmtKm(tripDistanceKm(pendingRide)) }} · {{ etaMin(tripDistanceKm(pendingRide)) }} min trip
+          🛣️ {{ fmtKm(tripDistanceKm(pendingRide)) }}<span *ngIf="tripEtaMin(pendingRide) !== null"> · {{ tripEtaMin(pendingRide) }} min</span> trip
         </span>
       </div>
       <div class="offer-actions">
