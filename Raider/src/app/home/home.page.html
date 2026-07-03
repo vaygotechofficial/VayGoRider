@@ -141,34 +141,54 @@
         <span class="meta-chip fare-chip">💰 Ride ₹{{ activeRide.rideCharge ?? activeRide.estimatedFare }} + Pickup ₹{{ activeRide.pickupCharge }}</span>
       </div>
 
-      <button class="chat-btn" (click)="openChat()">💬 Chat with passenger</button>
-
-      <!-- OTP entry — shown before ride starts -->
-      <ng-container *ngIf="activeRide.rideStatus === 'Accepted'">
-        <!-- Let the passenger know you've reached the pickup -->
-        <button class="arrived-btn" (click)="markArrived()" [disabled]="arrivedSent">
-          {{ arrivedSent ? 'Passenger notified ✓' : "I've arrived at pickup" }}
+      <!-- Compact actions: directions / chat / SOS -->
+      <div class="icon-actions">
+        <button class="icon-action" (click)="openGoogleDirections()">
+          <span class="ic">🧭</span><span class="ic-label">Directions</span>
         </button>
-        <p class="otp-label">Ask passenger for 4-digit trip code</p>
-        <div class="otp-row">
-          <input class="otp-input" type="text" maxlength="4" [(ngModel)]="otpInput"
-                 placeholder="_ _ _ _" />
-          <button class="accept-btn small" (click)="startRide()">→</button>
+        <button class="icon-action" (click)="openChat()">
+          <span class="ic">💬</span><span class="ic-label">Chat</span>
+        </button>
+        <button class="icon-action danger" (click)="confirmSos()">
+          <span class="ic">🆘</span><span class="ic-label">SOS</span>
+        </button>
+      </div>
+
+      <!-- Before start: OTP + arrived / cancel -->
+      <ng-container *ngIf="activeRide.rideStatus === 'Accepted'">
+        <!-- OTP unlocks only within 300m of the pickup point -->
+        <ng-container *ngIf="nearPickup; else pickupLocked">
+          <p class="otp-label">Enter the passenger's 4-digit trip code</p>
+          <div class="otp-row">
+            <input class="otp-input" type="text" inputmode="numeric" maxlength="4"
+                   [(ngModel)]="otpInput" placeholder="– – – –" />
+            <button class="otp-go" (click)="startRide()">Start ▶</button>
+          </div>
+          <p class="otp-error" *ngIf="otpError">{{ otpError }}</p>
+        </ng-container>
+        <ng-template #pickupLocked>
+          <p class="otp-locked">
+            🔒 Reach the pickup to enter the trip code
+            <span *ngIf="pickupDistM != null" class="otp-locked-dist">— {{ fmtPickupDist() }} away</span>
+          </p>
+        </ng-template>
+
+        <div class="bottom-actions">
+          <button class="btn-cancel" (click)="cancelRide()">Cancel ride</button>
+          <button class="btn-primary" (click)="markArrived()" [disabled]="arrivedSent || !nearPickup">
+            {{ arrivedSent ? 'Notified ✓' : (nearPickup ? "I've arrived" : 'Get closer to arrive') }}
+          </button>
         </div>
-        <p class="otp-error" *ngIf="otpError">{{ otpError }}</p>
       </ng-container>
 
-      <!-- End ride — shown after ride started -->
+      <!-- After start: end ride / cancel -->
       <ng-container *ngIf="activeRide.rideStatus === 'Started'">
         <p class="otp-error" *ngIf="endRideError">{{ endRideError }}</p>
-        <button class="go-online-btn" (click)="endRide()">End Ride</button>
+        <div class="bottom-actions">
+          <button class="btn-cancel" (click)="cancelRide()">Cancel ride</button>
+          <button class="btn-primary" (click)="endRide()">End Ride</button>
+        </div>
       </ng-container>
-
-      <!-- Cancel ride (with reason) — available once accepted, before completion -->
-      <button class="cancel-ride-btn" (click)="cancelRide()">Cancel ride</button>
-
-      <!-- SOS — available during the active ride -->
-      <button class="sos-btn" (click)="confirmSos()">🆘 Emergency SOS</button>
     </div>
 
     <!-- COMPLETED RIDE -->

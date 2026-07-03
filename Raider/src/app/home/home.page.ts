@@ -55,6 +55,11 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   cancelReasons: string[] = [];
   arrivedSent = false;
 
+  // OTP entry is unlocked only once the driver is within this radius of the pickup.
+  readonly pickupUnlockRadiusM = 300;
+  nearPickup = false;
+  pickupDistM: number | null = null;
+
   // Service-area geofence for the driver's current location.
   serviceable = true;
   serviceMessage = '';
@@ -144,6 +149,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         if (ride && (ride.rideStatus === 'Accepted' || ride.rideStatus === 'Started')) {
           this.activeRide = ride;
           this.saveActiveRide();
+          this.updatePickupProximity();
           if (this.googleReady) this.showRideMarkers(ride);
         } else if (this.activeRide) {
           // Server has no active ride for us (e.g. the passenger cancelled while the app was
@@ -184,11 +190,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.riderMarker = new google.maps.Marker({
       position: center,
       map: this.gmap,
-      icon: {
-        url: 'assets/VayGoIcon.png',
-        scaledSize: new google.maps.Size(56, 56),
-        anchor: new google.maps.Point(28, 56)
-      },
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9, fillColor: '#1e88e5', fillOpacity: 1, strokeColor: '#ffffff', strokeWeight: 3 },
       title: 'You'
     });
 
@@ -221,7 +223,10 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         }
 
         // Keep the on-screen navigation following the driver toward pickup/drop.
-        if (this.activeRide) this.refreshNav(lat, lng);
+        if (this.activeRide) {
+          this.refreshNav(lat, lng);
+          this.updatePickupProximity();
+        }
       });
     }).then(id => { this.watchId = id; });
   }
@@ -346,6 +351,18 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     if (this.activeRide?.rideId) this.router.navigate(['/chat', this.activeRide.rideId]);
   }
 
+  // Open turn-by-turn navigation in the Google Maps app to the current target
+  // (pickup while heading there, drop once the trip has started).
+  openGoogleDirections() {
+    if (!this.activeRide) return;
+    const started = this.activeRide.rideStatus === 'Started';
+    const lat = Number(started ? this.activeRide.dropLat : this.activeRide.pickupLat);
+    const lng = Number(started ? this.activeRide.dropLong : this.activeRide.pickupLong);
+    if (isNaN(lat) || isNaN(lng)) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving&dir_action=navigate`;
+    window.open(url, '_system');
+  }
+
   private onNewRideRequest(data: any) {
     if (this.activeRide) return;
     this.pendingRide = data;
@@ -395,6 +412,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         this.pendingRide = null;
         this.arrivedSent = false;
         this.saveActiveRide();
+        this.updatePickupProximity();
         this.drawRoute(
           this.currentLat!, this.currentLng!,
           Number(this.activeRide.pickupLat), Number(this.activeRide.pickupLong)
@@ -422,8 +440,15 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Tell the passenger the driver has reached the pickup point.
+  // Only allowed within pickupUnlockRadiusM of the pickup (same as the OTP).
   markArrived() {
     if (!this.activeRide || this.arrivedSent) return;
+    this.updatePickupProximity();
+    if (!this.nearPickup) {
+      const away = this.pickupDistM != null ? ` (${Math.round(this.pickupDistM)}m away)` : '';
+      this.showToast(`Reach the pickup point first${away}, need ≤${this.pickupUnlockRadiusM}m`, 'danger');
+      return;
+    }
     this.api.post(`rider/arrived/${this.activeRide.rideId}?driverId=${getCurrentDriverId()}`, {}).subscribe({
       next: (res) => { this.arrivedSent = true; this.showToast(res?.message || 'Passenger notified'); },
       error: (err: any) => { this.showToast(err?.error?.message || 'Could not notify passenger', 'danger'); }
@@ -485,6 +510,14 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     if (!this.activeRide) return;
     this.otpError = '';
 
+    // Trip code can only be entered once the driver has reached the pickup.
+    this.updatePickupProximity();
+    if (!this.nearPickup) {
+      const away = this.pickupDistM != null ? ` (${Math.round(this.pickupDistM)}m away)` : '';
+      this.otpError = `Reach the pickup point first${away}, need ≤${this.pickupUnlockRadiusM}m`;
+      return;
+    }
+
     this.api.post(`rider/start-ride/${this.activeRide.rideId}`, {
       otp: this.otpInput,
       driverId: getCurrentDriverId()
@@ -541,14 +574,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       this.pickupMarker = new google.maps.Marker({
         position: { lat: ride.pickupLat, lng: ride.pickupLong },
         map: this.gmap,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: '#4caf50',
-          fillOpacity: 1,
-          strokeColor: '#fff',
-          strokeWeight: 3
-        },
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#2e7d32', fillOpacity: 1, strokeColor: '#ffffff', strokeWeight: 2 },
         title: 'Pickup'
       });
     }
@@ -557,14 +583,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       this.dropMarker = new google.maps.Marker({
         position: { lat: ride.dropLat, lng: ride.dropLong },
         map: this.gmap,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: '#650015',
-          fillOpacity: 1,
-          strokeColor: '#fff',
-          strokeWeight: 3
-        },
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#e53935', fillOpacity: 1, strokeColor: '#ffffff', strokeWeight: 2 },
         title: 'Drop'
       });
     }
@@ -642,6 +661,31 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     const dLng = (lng2 - lng1) * Math.PI / 180;
     const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  // Recompute how far the driver is from the pickup and whether the OTP entry
+  // should be unlocked (only within pickupUnlockRadiusM of the pickup point).
+  private updatePickupProximity() {
+    if (!this.activeRide || this.activeRide.rideStatus !== 'Accepted' ||
+        this.currentLat == null || this.currentLng == null ||
+        this.activeRide.pickupLat == null || this.activeRide.pickupLong == null) {
+      this.pickupDistM = null;
+      this.nearPickup = false;
+      return;
+    }
+    this.pickupDistM = this.haversineM(
+      this.currentLat, this.currentLng,
+      Number(this.activeRide.pickupLat), Number(this.activeRide.pickupLong)
+    );
+    this.nearPickup = this.pickupDistM <= this.pickupUnlockRadiusM;
+  }
+
+  // Human-readable distance-to-pickup for the locked-OTP hint.
+  fmtPickupDist(): string {
+    if (this.pickupDistM == null) return '';
+    return this.pickupDistM < 1000
+      ? `${Math.round(this.pickupDistM)} m`
+      : `${(this.pickupDistM / 1000).toFixed(1)} km`;
   }
 
   iconFor(vehicleType: string): string {
