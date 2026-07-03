@@ -133,8 +133,12 @@
           <div class="order-addr">🏁 {{ activeRide.dropAddress }}</div>
         </div>
         <div class="order-price-col">
-          <span class="price">₹{{ activeRide.estimatedFare }}</span>
+          <span class="price">₹{{ activeRide.totalFare ?? activeRide.estimatedFare }}</span>
+          <span class="price-sub" *ngIf="activeRide.pickupCharge">incl. pickup</span>
         </div>
+      </div>
+      <div class="order-meta" *ngIf="activeRide.pickupCharge">
+        <span class="meta-chip fare-chip">💰 Ride ₹{{ activeRide.rideCharge ?? activeRide.estimatedFare }} + Pickup ₹{{ activeRide.pickupCharge }}</span>
       </div>
 
       <button class="chat-btn" (click)="openChat()">💬 Chat with passenger</button>
