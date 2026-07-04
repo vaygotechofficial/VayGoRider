@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, ToastController, AlertController } from '@ionic/angular/standalone';
+import { IonContent, ToastController, AlertController, Platform } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { Subscription } from 'rxjs';
@@ -72,7 +72,6 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   private googleReady = false;
   private watchId: string | null = null;
   private appResumeHandle?: { remove: () => Promise<void> };
-  private backButtonHandle?: { remove: () => Promise<void> };
 
   private currentLat: number | null = null;
   private currentLng: number | null = null;
@@ -86,7 +85,8 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     private signalr: SignalrService,
     private ngZone: NgZone,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private platform: Platform
   ) {}
 
   get greeting(): string {
@@ -113,8 +113,13 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
     // Hardware back on the home page: don't leave / exit the app. Ask to log out; if
     // they cancel, stay put. (Home is the app root, so the default back would exit.)
-    App.addListener('backButton', () => this.ngZone.run(() => this.confirmLogout()))
-      .then(h => { this.backButtonHandle = h; });
+    // High-priority intercept so Ionic's default back navigation (which would pop to the
+    // OTP/login screen) does NOT run — we only show the logout prompt; cancel stays on home.
+    this.subs.push(
+      this.platform.backButton.subscribeWithPriority(9999, () => {
+        this.ngZone.run(() => this.confirmLogout());
+      })
+    );
 
     this.api.get('rider/profile').subscribe({
       next: (profile) => {
@@ -768,7 +773,6 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.signalr.disconnect();
     if (this.watchId !== null) Geolocation.clearWatch({ id: this.watchId });
     this.appResumeHandle?.remove();
-    this.backButtonHandle?.remove();
     this.clearRoute();
   }
 }
