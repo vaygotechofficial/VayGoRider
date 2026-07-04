@@ -78,6 +78,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
   private countdownTimer: any;
   private subs: Subscription[] = [];
+  private backButtonSub?: Subscription;
 
   constructor(
     private router: Router,
@@ -111,15 +112,9 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     App.addListener('resume', () => this.ngZone.run(() => this.syncActiveRide()))
       .then(h => { this.appResumeHandle = h; });
 
-    // Hardware back on the home page: don't leave / exit the app. Ask to log out; if
-    // they cancel, stay put. (Home is the app root, so the default back would exit.)
-    // High-priority intercept so Ionic's default back navigation (which would pop to the
-    // OTP/login screen) does NOT run — we only show the logout prompt; cancel stays on home.
-    this.subs.push(
-      this.platform.backButton.subscribeWithPriority(9999, () => {
-        this.ngZone.run(() => this.confirmLogout());
-      })
-    );
+    // NOTE: the hardware-back interceptor is registered in ionViewWillEnter and removed in
+    // ionViewWillLeave, so the logout prompt fires ONLY while the home page is visible; other
+    // pages keep default native back.
 
     this.api.get('rider/profile').subscribe({
       next: (profile) => {
@@ -136,6 +131,19 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       next: (reasons) => { this.cancelReasons = Array.isArray(reasons) ? reasons : []; },
       error: () => {}
     });
+  }
+
+  // Register the hardware-back interceptor ONLY while home is visible, so the logout prompt
+  // fires on home only; other pages keep default native back.
+  ionViewWillEnter() {
+    this.backButtonSub = this.platform.backButton.subscribeWithPriority(9999, () => {
+      this.ngZone.run(() => this.confirmLogout());
+    });
+  }
+
+  ionViewWillLeave() {
+    this.backButtonSub?.unsubscribe();
+    this.backButtonSub = undefined;
   }
 
   private restoreActiveRide() {
