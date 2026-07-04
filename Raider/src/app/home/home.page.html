@@ -106,6 +106,15 @@
         </div>
       </div>
 
+      <!-- Fare breakdown so the driver sees ride cost + pickup cost = total -->
+      <div class="fare-breakdown" *ngIf="pendingRide.pickupCharge">
+        <span class="fb-part">Ride ₹{{ (pendingRide.rideCharge ?? pendingRide.estimatedFare) | number:'1.0-0' }}</span>
+        <span class="fb-plus">+</span>
+        <span class="fb-part">Pickup ₹{{ pendingRide.pickupCharge | number:'1.0-0' }}</span>
+        <span class="fb-eq">=</span>
+        <span class="fb-total">₹{{ (pendingRide.totalFare ?? pendingRide.estimatedFare) | number:'1.0-0' }}</span>
+      </div>
+
       <div class="order-row">
         <div class="order-info">
           <div class="restaurant-name">

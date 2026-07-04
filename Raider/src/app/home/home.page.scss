@@ -408,6 +408,21 @@ ion-content {
 .stat-trip   { background: rgba(21, 101, 42, 0.10); border: 1px solid rgba(21, 101, 42, 0.28); }
 .stat-trip   .stat-val, .stat-trip .stat-lbl   { color: #15652a; }   /* green = the paid trip */
 
+/* Fare breakdown: ride cost + pickup cost = total */
+.fare-breakdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 4px;
+  font-size: 13px;
+  color: #555;
+}
+.fare-breakdown .fb-part { font-weight: 600; }
+.fare-breakdown .fb-plus, .fare-breakdown .fb-eq { color: #999; font-weight: 700; }
+.fare-breakdown .fb-total { font-weight: 800; color: #650015; }
+
 .countdown {
   position: relative;
   width: 36px;
