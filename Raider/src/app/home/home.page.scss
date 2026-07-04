@@ -379,27 +379,34 @@ ion-content {
 }
 .stat-box {
   flex: 1;
-  background: rgba(101, 0, 21, 0.06);
-  border: 1px solid rgba(101, 0, 21, 0.12);
   border-radius: 12px;
   padding: 10px 6px;
   text-align: center;
 }
 .stat-val {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
-  color: #650015;
-  line-height: 1.1;
+  line-height: 1.15;
 }
-.stat-eta { font-size: 13px; font-weight: 700; }
+.stat-eta { font-size: 12px; font-weight: 700; }
 .stat-lbl {
-  font-size: 10px;
-  font-weight: 600;
-  color: #888;
+  font-size: 9px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   margin-top: 3px;
+  opacity: 0.75;
 }
+
+/* Distinct colours so fare / pickup-approach / trip read apart at a glance */
+.stat-fare   { background: rgba(101, 0, 21, 0.08);  border: 1px solid rgba(101, 0, 21, 0.18); }
+.stat-fare   .stat-val, .stat-fare .stat-lbl   { color: #650015; }
+
+.stat-pickup { background: rgba(224, 122, 0, 0.10); border: 1px solid rgba(224, 122, 0, 0.28); }
+.stat-pickup .stat-val, .stat-pickup .stat-lbl { color: #b35c00; }   /* amber = your approach to pickup */
+
+.stat-trip   { background: rgba(21, 101, 42, 0.10); border: 1px solid rgba(21, 101, 42, 0.28); }
+.stat-trip   .stat-val, .stat-trip .stat-lbl   { color: #15652a; }   /* green = the paid trip */
 
 .countdown {
   position: relative;

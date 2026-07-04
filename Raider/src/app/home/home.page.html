@@ -90,19 +90,19 @@
         </div>
       </div>
 
-      <!-- Big at-a-glance stats: price · pickup · trip (scan fast) -->
+      <!-- Big at-a-glance stats: fare + distinct PICKUP (driver→rider) vs TRIP (the ride) -->
       <div class="offer-stats">
-        <div class="stat-box">
+        <div class="stat-box stat-fare">
           <div class="stat-val">₹{{ (pendingRide.totalFare ?? pendingRide.estimatedFare) | number:'1.0-0' }}</div>
-          <div class="stat-lbl">Fare</div>
+          <div class="stat-lbl">{{ pendingRide.pickupCharge ? 'Fare · incl. pickup' : 'Fare' }}</div>
         </div>
-        <div class="stat-box" *ngIf="pickupDistanceKm(pendingRide) !== null">
-          <div class="stat-val">{{ fmtKm(pickupDistanceKm(pendingRide)) }}<span class="stat-eta" *ngIf="pickupEtaMin(pendingRide) !== null"> · {{ pickupEtaMin(pendingRide) }}m</span></div>
-          <div class="stat-lbl">To pickup</div>
+        <div class="stat-box stat-pickup" *ngIf="pickupDistanceKm(pendingRide) !== null">
+          <div class="stat-val">🧭 {{ fmtKm(pickupDistanceKm(pendingRide)) }}<span class="stat-eta" *ngIf="pickupEtaMin(pendingRide) !== null"> · {{ pickupEtaMin(pendingRide) }}m</span></div>
+          <div class="stat-lbl">You → Pickup</div>
         </div>
-        <div class="stat-box" *ngIf="tripDistanceKm(pendingRide) !== null">
-          <div class="stat-val">{{ fmtKm(tripDistanceKm(pendingRide)) }}<span class="stat-eta" *ngIf="tripEtaMin(pendingRide) !== null"> · {{ tripEtaMin(pendingRide) }}m</span></div>
-          <div class="stat-lbl">Trip</div>
+        <div class="stat-box stat-trip" *ngIf="tripDistanceKm(pendingRide) !== null">
+          <div class="stat-val">🛣️ {{ fmtKm(tripDistanceKm(pendingRide)) }}<span class="stat-eta" *ngIf="tripEtaMin(pendingRide) !== null"> · {{ tripEtaMin(pendingRide) }}m</span></div>
+          <div class="stat-lbl">Trip (pickup → drop)</div>
         </div>
       </div>
 
@@ -114,22 +114,8 @@
           <div class="order-addr">📍 {{ pendingRide.pickupAddress }}</div>
           <div class="order-addr">🏁 {{ pendingRide.dropAddress }}</div>
         </div>
-        <div class="order-price-col">
-          <span class="price">₹{{ (pendingRide.totalFare ?? pendingRide.estimatedFare) | number:'1.0-0' }}</span>
-          <span class="price-sub" *ngIf="pendingRide.pickupCharge">incl. pickup</span>
-        </div>
       </div>
-      <div class="order-meta">
-        <span class="meta-chip fare-chip" *ngIf="pendingRide.pickupCharge">
-          💰 Ride ₹{{ pendingRide.rideCharge | number:'1.0-2' }} + Pickup ₹{{ pendingRide.pickupCharge | number:'1.0-2' }}
-        </span>
-        <span class="meta-chip" *ngIf="pickupDistanceKm(pendingRide) !== null">
-          🧭 {{ fmtKm(pickupDistanceKm(pendingRide)) }}<span *ngIf="pickupEtaMin(pendingRide) !== null"> · {{ pickupEtaMin(pendingRide) }} min</span> to pickup
-        </span>
-        <span class="meta-chip" *ngIf="tripDistanceKm(pendingRide) !== null">
-          🛣️ {{ fmtKm(tripDistanceKm(pendingRide)) }}<span *ngIf="tripEtaMin(pendingRide) !== null"> · {{ tripEtaMin(pendingRide) }} min</span> trip
-        </span>
-      </div>
+
       <div class="offer-actions">
         <button class="btn-ignore" (click)="rejectRide()">Ignore</button>
         <button class="btn-accept" (click)="acceptRide()">Accept</button>
