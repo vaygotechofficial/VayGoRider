@@ -72,6 +72,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   private googleReady = false;
   private watchId: string | null = null;
   private appResumeHandle?: { remove: () => Promise<void> };
+  private backButtonHandle?: { remove: () => Promise<void> };
 
   private currentLat: number | null = null;
   private currentLng: number | null = null;
@@ -109,6 +110,11 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.syncActiveRide();
     App.addListener('resume', () => this.ngZone.run(() => this.syncActiveRide()))
       .then(h => { this.appResumeHandle = h; });
+
+    // Hardware back on the home page: don't leave / exit the app. Ask to log out; if
+    // they cancel, stay put. (Home is the app root, so the default back would exit.)
+    App.addListener('backButton', () => this.ngZone.run(() => this.confirmLogout()))
+      .then(h => { this.backButtonHandle = h; });
 
     this.api.get('rider/profile').subscribe({
       next: (profile) => {
@@ -723,6 +729,19 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
 
   toggleMenu() { this.menuOpen = !this.menuOpen; }
 
+  // Confirm-then-logout, used by both the menu Logout action and the hardware back button.
+  async confirmLogout() {
+    const alert = await this.alertCtrl.create({
+      header: 'Log out?',
+      message: 'Do you want to log out of VayGo?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },            // stay on the page
+        { text: 'Log out', role: 'destructive', handler: () => this.logout() }
+      ]
+    });
+    await alert.present();
+  }
+
   logout() {
     this.clearCountdown();
     this.subs.forEach(s => s.unsubscribe());
@@ -749,6 +768,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.signalr.disconnect();
     if (this.watchId !== null) Geolocation.clearWatch({ id: this.watchId });
     this.appResumeHandle?.remove();
+    this.backButtonHandle?.remove();
     this.clearRoute();
   }
 }

@@ -26,7 +26,7 @@
       <button class="menu-item" (click)="goEarnings()">💰 Earnings</button>
       <button class="menu-item" (click)="goHistory()">🕒 Ride History</button>
       <button class="menu-item" (click)="goSupport()">💬 Help &amp; Support</button>
-      <button class="menu-item menu-logout" (click)="logout()">
+      <button class="menu-item menu-logout" (click)="confirmLogout()">
         <svg class="menu-logout-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -98,13 +98,13 @@
           <div class="order-addr">🏁 {{ pendingRide.dropAddress }}</div>
         </div>
         <div class="order-price-col">
-          <span class="price">₹{{ pendingRide.totalFare ?? pendingRide.estimatedFare }}</span>
+          <span class="price">₹{{ (pendingRide.totalFare ?? pendingRide.estimatedFare) | number:'1.0-0' }}</span>
           <span class="price-sub" *ngIf="pendingRide.pickupCharge">incl. pickup</span>
         </div>
       </div>
       <div class="order-meta">
         <span class="meta-chip fare-chip" *ngIf="pendingRide.pickupCharge">
-          💰 Ride ₹{{ pendingRide.rideCharge }} + Pickup ₹{{ pendingRide.pickupCharge }}
+          💰 Ride ₹{{ pendingRide.rideCharge | number:'1.0-2' }} + Pickup ₹{{ pendingRide.pickupCharge | number:'1.0-2' }}
         </span>
         <span class="meta-chip" *ngIf="pickupDistanceKm(pendingRide) !== null">
           🧭 {{ fmtKm(pickupDistanceKm(pendingRide)) }}<span *ngIf="pickupEtaMin(pendingRide) !== null"> · {{ pickupEtaMin(pendingRide) }} min</span> to pickup
@@ -133,12 +133,12 @@
           <div class="order-addr">🏁 {{ activeRide.dropAddress }}</div>
         </div>
         <div class="order-price-col">
-          <span class="price">₹{{ activeRide.totalFare ?? activeRide.estimatedFare }}</span>
+          <span class="price">₹{{ (activeRide.totalFare ?? activeRide.estimatedFare) | number:'1.0-0' }}</span>
           <span class="price-sub" *ngIf="activeRide.pickupCharge">incl. pickup</span>
         </div>
       </div>
       <div class="order-meta" *ngIf="activeRide.pickupCharge">
-        <span class="meta-chip fare-chip">💰 Ride ₹{{ activeRide.rideCharge ?? activeRide.estimatedFare }} + Pickup ₹{{ activeRide.pickupCharge }}</span>
+        <span class="meta-chip fare-chip">💰 Ride ₹{{ (activeRide.rideCharge ?? activeRide.estimatedFare) | number:'1.0-2' }} + Pickup ₹{{ activeRide.pickupCharge | number:'1.0-2' }}</span>
       </div>
 
       <!-- Compact actions: directions / chat / SOS -->
@@ -201,7 +201,7 @@
           <div class="restaurant-name">Fare collected</div>
         </div>
         <div class="order-price-col">
-          <span class="price">₹{{ completedRide.finalFare }}</span>
+          <span class="price">₹{{ completedRide.finalFare | number:'1.0-0' }}</span>
         </div>
       </div>
       <button class="go-online-btn" (click)="dismissCompleted()">Done</button>
