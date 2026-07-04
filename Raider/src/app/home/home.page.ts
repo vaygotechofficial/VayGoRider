@@ -42,6 +42,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   appVersion = environment.appVersion;
 
   pendingRide: any = null;
+  pendingQueue: any[] = [];   // additional offers waiting behind the visible one (busy days)
   countdown = environment.acceptTimeoutSeconds;
 
   activeRide: any = null;
@@ -383,17 +384,42 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private onNewRideRequest(data: any) {
-    if (this.activeRide) return;
+    if (this.activeRide || !data?.rideId) return;
+    // Queue: on a busy day multiple offers can arrive. Show them one at a time (newest
+    // requests join the back of the queue); only the one on screen can be accepted.
+    if (this.pendingRide?.rideId === data.rideId) return;                 // already showing it
+    if (this.pendingQueue.some(r => r.rideId === data.rideId)) return;    // already queued
+    if (this.pendingRide) {
+      this.pendingQueue.push(data);   // busy — queue behind the current offer
+      return;
+    }
+    this.showOffer(data);
+  }
+
+  // Show one offer (the head of the queue) with its countdown + map markers.
+  private showOffer(data: any) {
     this.pendingRide = data;
     this.startCountdown(data.acceptWithinSeconds || environment.acceptTimeoutSeconds);
     this.showRideMarkers(data);
   }
 
-  private onRideCancelled(data: any) {
-    if (this.pendingRide?.rideId === data?.rideId) {
-      this.clearCountdown();
+  // Dismiss the current offer and advance to the next queued one, if any.
+  private advanceQueue() {
+    this.clearCountdown();
+    this.clearRideMarkers();
+    const next = this.pendingQueue.shift();
+    if (next) {
+      this.showOffer(next);
+    } else {
       this.pendingRide = null;
-      this.clearRideMarkers();
+    }
+  }
+
+  private onRideCancelled(data: any) {
+    // Drop a cancelled ride whether it's the visible offer or waiting in the queue.
+    this.pendingQueue = this.pendingQueue.filter(r => r.rideId !== data?.rideId);
+    if (this.pendingRide?.rideId === data?.rideId) {
+      this.advanceQueue();
     }
     if (this.activeRide?.rideId === data?.rideId) {
       this.activeRide = null;
@@ -409,9 +435,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       this.ngZone.run(() => {
         this.countdown--;
         if (this.countdown <= 0) {
-          this.clearCountdown();
-          this.pendingRide = null;
-          this.clearRideMarkers();
+          this.advanceQueue();   // expired — show the next queued offer
         }
       });
     }, 1000);
@@ -429,6 +453,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         this.clearCountdown();
         this.activeRide = { ...this.pendingRide, rideStatus: 'Accepted' };
         this.pendingRide = null;
+        this.pendingQueue = [];   // taken a ride — drop all other pending offers
         this.arrivedSent = false;
         this.saveActiveRide();
         this.updatePickupProximity();
@@ -438,9 +463,8 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         );
       },
       error: () => {
-        this.clearCountdown();
-        this.pendingRide = null;
-        this.clearRideMarkers();
+        // Accept failed (e.g. taken by someone else) — move on to the next offer.
+        this.advanceQueue();
       }
     });
   }
@@ -453,9 +477,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       next: () => {}, error: () => {}
     });
 
-    this.clearCountdown();
-    this.pendingRide = null;
-    this.clearRideMarkers();
+    this.advanceQueue();   // ignore this one, show the next queued offer
   }
 
   // Tell the passenger the driver has reached the pickup point.

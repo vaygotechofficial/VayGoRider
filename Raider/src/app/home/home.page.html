@@ -79,7 +79,7 @@
     <!-- NEW RIDE REQUEST -->
     <div class="order-card" *ngIf="pendingRide">
       <div class="order-top">
-        <span class="order-label">New Ride Request</span>
+        <span class="order-label">New Ride Request<span class="queue-badge" *ngIf="pendingQueue.length"> +{{ pendingQueue.length }} more</span></span>
         <div class="countdown" [class.urgent]="countdown <= 5">
           <svg class="countdown-ring" viewBox="0 0 36 36">
             <circle class="ring-bg" cx="18" cy="18" r="15"/>
@@ -89,6 +89,23 @@
           <span class="countdown-num">{{ countdown }}</span>
         </div>
       </div>
+
+      <!-- Big at-a-glance stats: price · pickup · trip (scan fast) -->
+      <div class="offer-stats">
+        <div class="stat-box">
+          <div class="stat-val">₹{{ (pendingRide.totalFare ?? pendingRide.estimatedFare) | number:'1.0-0' }}</div>
+          <div class="stat-lbl">Fare</div>
+        </div>
+        <div class="stat-box" *ngIf="pickupDistanceKm(pendingRide) !== null">
+          <div class="stat-val">{{ fmtKm(pickupDistanceKm(pendingRide)) }}<span class="stat-eta" *ngIf="pickupEtaMin(pendingRide) !== null"> · {{ pickupEtaMin(pendingRide) }}m</span></div>
+          <div class="stat-lbl">To pickup</div>
+        </div>
+        <div class="stat-box" *ngIf="tripDistanceKm(pendingRide) !== null">
+          <div class="stat-val">{{ fmtKm(tripDistanceKm(pendingRide)) }}<span class="stat-eta" *ngIf="tripEtaMin(pendingRide) !== null"> · {{ tripEtaMin(pendingRide) }}m</span></div>
+          <div class="stat-lbl">Trip</div>
+        </div>
+      </div>
+
       <div class="order-row">
         <div class="order-info">
           <div class="restaurant-name">
