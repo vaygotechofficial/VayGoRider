@@ -44,6 +44,9 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   pendingRide: any = null;
   pendingQueue: any[] = [];   // additional offers waiting behind the visible one (busy days)
   countdown = environment.acceptTimeoutSeconds;
+  accepting = false;          // true while an accept POST is in flight (guards double-tap)
+  startingRide = false;       // true while start-ride (OTP) POST is in flight
+  endingRide = false;         // true while end-ride POST is in flight
 
   activeRide: any = null;
   completedRide: any = null;
@@ -446,13 +449,22 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   acceptRide() {
-    if (!this.pendingRide) return;
+    if (!this.pendingRide || this.accepting) return;
 
-    this.api.post('rider/accept-ride', { rideId: this.pendingRide.rideId, driverId: getCurrentDriverId() }).subscribe({
+    // Dismiss the offer popup IMMEDIATELY on tap (don't wait for the server). On a
+    // slow/flaky network the round-trip can take seconds; leaving the popup up until
+    // the response arrives is what made it "still display after accepting". We capture
+    // the offer, hide the popup + countdown now, and reconcile when the POST returns.
+    const offer = this.pendingRide;
+    this.accepting = true;
+    this.clearCountdown();
+    this.clearRideMarkers();
+    this.pendingRide = null;
+
+    this.api.post('rider/accept-ride', { rideId: offer.rideId, driverId: getCurrentDriverId() }).subscribe({
       next: () => {
-        this.clearCountdown();
-        this.activeRide = { ...this.pendingRide, rideStatus: 'Accepted' };
-        this.pendingRide = null;
+        this.accepting = false;
+        this.activeRide = { ...offer, rideStatus: 'Accepted' };
         this.pendingQueue = [];   // taken a ride — drop all other pending offers
         this.arrivedSent = false;
         this.saveActiveRide();
@@ -463,7 +475,9 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         );
       },
       error: () => {
-        // Accept failed (e.g. taken by someone else) — move on to the next offer.
+        // Accept failed (e.g. taken by someone else / network) — the popup is already
+        // gone; move on to the next queued offer so the driver isn't stuck.
+        this.accepting = false;
         this.advanceQueue();
       }
     });
@@ -548,7 +562,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   startRide() {
-    if (!this.activeRide) return;
+    if (!this.activeRide || this.startingRide) return;   // guard double-tap on slow networks
     this.otpError = '';
 
     // Trip code can only be entered once the driver has reached the pickup.
@@ -559,11 +573,13 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    this.startingRide = true;
     this.api.post(`rider/start-ride/${this.activeRide.rideId}`, {
       otp: this.otpInput,
       driverId: getCurrentDriverId()
     }).subscribe({
       next: () => {
+        this.startingRide = false;
         this.activeRide.rideStatus = 'Started';
         this.otpInput = '';
         this.saveActiveRide();
@@ -573,13 +589,14 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
         );
       },
       error: (err: any) => {
+        this.startingRide = false;
         this.otpError = err?.error?.message || 'Invalid OTP';
       }
     });
   }
 
   endRide() {
-    if (!this.activeRide || this.currentLat == null || this.currentLng == null) return;
+    if (!this.activeRide || this.endingRide || this.currentLat == null || this.currentLng == null) return;
     this.endRideError = '';
 
     const distM = this.haversineM(
@@ -592,13 +609,19 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    this.endingRide = true;   // guard double-tap so the ride isn't ended/charged twice
     this.api.post(`rider/end-ride/${this.activeRide.rideId}?driverId=${getCurrentDriverId()}`, {}).subscribe({
       next: (res) => {
+        this.endingRide = false;
         this.completedRide = res?.data || this.activeRide;
         this.activeRide = null;
         localStorage.removeItem('riderActiveRide');
         this.clearRideMarkers();
         this.clearRoute();
+      },
+      error: (err: any) => {
+        this.endingRide = false;
+        this.endRideError = err?.error?.message || 'Could not end the ride. Please try again.';
       }
     });
   }
