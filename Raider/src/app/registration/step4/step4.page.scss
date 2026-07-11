@@ -133,6 +133,14 @@ ion-content {
   gap: 2px;
 }
 
+.amount-old {
+  font-size: 15px;
+  font-weight: 600;
+  color: #999;
+  text-decoration: line-through;
+  margin-right: 6px;
+}
+
 .amount {
   font-size: 22px;
   font-weight: 700;

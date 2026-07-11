@@ -9,6 +9,7 @@ import {
 } from '@capacitor/push-notifications';
 import { ToastController } from '@ionic/angular/standalone';
 import { ApiService } from './api';
+import { getPlatform, getDeviceModel } from './device-info';
 
 /**
  * Firebase Cloud Messaging (FCM) via @capacitor/push-notifications.
@@ -59,7 +60,8 @@ export class PushNotificationsService {
     this.api
       .post('notifications/register-device', {
         token: this.fcmToken,
-        platform: Capacitor.getPlatform(),
+        platform: getPlatform(),
+        deviceModel: getDeviceModel(),
       })
       .subscribe({
         next: () => console.log('[Push] device token registered with backend'),

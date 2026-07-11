@@ -27,8 +27,11 @@
       <div class="plan-top">
         <span class="plan-name">{{ plan.name }}</span>
         <div class="plan-price">
-          <span class="amount">₹{{ plan.price }}</span>
-          <span class="period">/month</span>
+          <ng-container *ngIf="plan.offerAmount != null">
+            <span class="amount-old">₹{{ plan.amount }}</span>
+          </ng-container>
+          <span class="amount">₹{{ charged }}</span>
+          <span class="period">/{{ plan.durationInDays }} days</span>
         </div>
       </div>
 
