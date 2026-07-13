@@ -1,13 +1,15 @@
 import { Routes } from '@angular/router';
+import { authGuard, guestGuard } from './services/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () => import('./login/login.page').then(m => m.LoginPage),
   },
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'home',
     pathMatch: 'full',
   },
   {
@@ -50,22 +52,27 @@ export const routes: Routes = [
   },
   {
     path: 'home',
+    canActivate: [authGuard],
     loadComponent: () => import('./home/home.page').then(m => m.HomePage)
   },
   {
     path: 'earnings',
+    canActivate: [authGuard],
     loadComponent: () => import('./earnings/earnings.page').then(m => m.EarningsPage)
   },
   {
     path: 'history',
+    canActivate: [authGuard],
     loadComponent: () => import('./history/history.page').then(m => m.HistoryPage)
   },
   {
     path: 'support',
+    canActivate: [authGuard],
     loadComponent: () => import('./support/support.page').then(m => m.SupportPage)
   },
   {
     path: 'chat/:rideId',
+    canActivate: [authGuard],
     loadComponent: () => import('./chat/chat.page').then(m => m.ChatPage)
   },
 ];

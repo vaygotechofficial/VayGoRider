@@ -259,6 +259,30 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.initGoogleMaps();
   }
 
+  /**
+   * Re-center the map on the driver's current location at the default zoom.
+   * Uses the live position kept by watchPosition; falls back to a fresh GPS read
+   * if we don't have one yet.
+   */
+  async recenter() {
+    if (!this.gmap) return;
+    if (this.validCoord(this.currentLat, this.currentLng)) {
+      this.gmap.panTo({ lat: this.currentLat!, lng: this.currentLng! });
+      this.gmap.setZoom(environment.mapZoom);
+      return;
+    }
+    try {
+      const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      this.currentLat = lat;
+      this.currentLng = lng;
+      this.gmap.panTo({ lat, lng });
+      this.gmap.setZoom(environment.mapZoom);
+    } catch {
+      // ignore — no fix available right now
+    }
+  }
+
   private async getInitialLocation(): Promise<{ lat: number; lng: number } | null> {
     try {
       const perm = await Geolocation.requestPermissions();
@@ -630,11 +654,26 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
     this.completedRide = null;
   }
 
+  /**
+   * A lat/lng is only usable if it's a real number and not the (0,0) "null island"
+   * default. Ride offers with unset coords arrive as 0,0; extending map bounds to
+   * (0,0) is what made the map zoom all the way out to show India/the whole world.
+   */
+  private validCoord(lat: any, lng: any): boolean {
+    const la = Number(lat), ln = Number(lng);
+    return Number.isFinite(la) && Number.isFinite(ln)
+      && !(la === 0 && ln === 0)
+      && la >= -90 && la <= 90 && ln >= -180 && ln <= 180;
+  }
+
   private showRideMarkers(ride: any) {
     if (!this.googleReady || !this.gmap) return;
     this.clearRideMarkers();
 
-    if (ride.pickupLat != null && ride.pickupLong != null) {
+    const hasPickup = this.validCoord(ride.pickupLat, ride.pickupLong);
+    const hasDrop = this.validCoord(ride.dropLat, ride.dropLong);
+
+    if (hasPickup) {
       this.pickupMarker = new google.maps.Marker({
         position: { lat: ride.pickupLat, lng: ride.pickupLong },
         map: this.gmap,
@@ -643,7 +682,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       });
     }
 
-    if (ride.dropLat != null && ride.dropLong != null) {
+    if (hasDrop) {
       this.dropMarker = new google.maps.Marker({
         position: { lat: ride.dropLat, lng: ride.dropLong },
         map: this.gmap,
@@ -652,13 +691,36 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       });
     }
 
-    if (ride.pickupLat != null && ride.dropLat != null) {
+    // Only fit bounds over coordinates we trust. Extend the current position only if
+    // it's valid too, then cap how far fitBounds may zoom out so a distant/garbage
+    // point can never blow the view out to the whole country.
+    if (hasPickup && hasDrop) {
       const bounds = new google.maps.LatLngBounds();
       bounds.extend({ lat: ride.pickupLat, lng: ride.pickupLong });
       bounds.extend({ lat: ride.dropLat, lng: ride.dropLong });
-      if (this.currentLat != null) bounds.extend({ lat: this.currentLat, lng: this.currentLng! });
-      this.gmap.fitBounds(bounds, { top: 120, bottom: 300, left: 40, right: 40 });
+      if (this.validCoord(this.currentLat, this.currentLng)) {
+        bounds.extend({ lat: this.currentLat!, lng: this.currentLng! });
+      }
+      this.fitBoundsCapped(bounds, { top: 120, bottom: 300, left: 40, right: 40 });
+    } else if (hasPickup) {
+      this.gmap.panTo({ lat: ride.pickupLat, lng: ride.pickupLong });
     }
+  }
+
+  /**
+   * fitBounds, but clamp the resulting zoom so the map never zooms out past a sane
+   * neighbourhood level. Google fires idle once after fitBounds settles; we correct
+   * the zoom there and detach the listener.
+   */
+  private fitBoundsCapped(bounds: google.maps.LatLngBounds, padding: google.maps.Padding, minZoom = 11) {
+    if (!this.gmap) return;
+    this.gmap.fitBounds(bounds, padding);
+    const listener = google.maps.event.addListenerOnce(this.gmap, 'idle', () => {
+      const z = this.gmap.getZoom();
+      if (z != null && z < minZoom) this.gmap.setZoom(minZoom);
+    });
+    // (listener auto-removes after firing once)
+    void listener;
   }
 
   private clearRideMarkers() {
@@ -815,8 +877,12 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       this.api.post('rider/go-offline', { driverId }).subscribe({ next: () => {}, error: () => {} });
     }
 
+    // Clear the FULL session (token, user data, driverId, and the 1-month login
+    // timestamp) so isLoggedIn()/the auth guard treat the user as logged out.
     localStorage.removeItem('token');
+    localStorage.removeItem('userData');
     localStorage.removeItem('driverId');
+    localStorage.removeItem('loginTime');
     this.router.navigate(['/login']);
   }
 
