@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  baseUrl: 'https://apps.vaygotech.com/api',
+  baseUrl: 'https://apps.vaygotech.com/ride/api',
   userType: 'RIDER',
   appVersion: '1.0.5',
   acceptTimeoutSeconds: 15,
