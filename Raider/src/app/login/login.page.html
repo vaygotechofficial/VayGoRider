@@ -32,7 +32,14 @@
           <p class="ion-text-center">{{ errormessage }}</p>
         </ion-text>
 
-        <ion-button expand="block" class="submit" type="submit">
+        <label class="privacy-check">
+          <input type="checkbox" [(ngModel)]="acceptedPrivacy" [ngModelOptions]="{ standalone: true }" />
+          <span>I have read and accept the
+            <a class="link" (click)="goToPrivacy(); $event.preventDefault()">Privacy Policy</a>.
+          </span>
+        </label>
+
+        <ion-button expand="block" class="submit" type="submit" [disabled]="!acceptedPrivacy">
           Send OTP
         </ion-button>
       </form>

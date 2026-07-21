@@ -18,6 +18,7 @@ export class LoginPage {
   loginForm;
   errormessage = '';
   appVersion = environment.appVersion;
+  acceptedPrivacy = false;   // must accept the Privacy Policy before sending OTP
 
   constructor(
     private fb: FormBuilder,
@@ -32,6 +33,10 @@ export class LoginPage {
 
   async login() {
     this.errormessage = '';
+    if (!this.acceptedPrivacy) {
+      this.errormessage = 'Please accept the Privacy Policy to continue.';
+      return;
+    }
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -55,5 +60,9 @@ export class LoginPage {
 
   goToRegister() {
     this.router.navigate(['/register']);
+  }
+
+  goToPrivacy() {
+    this.router.navigate(['/privacy']);
   }
 }

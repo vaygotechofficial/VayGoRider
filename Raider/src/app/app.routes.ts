@@ -8,6 +8,11 @@ export const routes: Routes = [
     loadComponent: () => import('./login/login.page').then(m => m.LoginPage),
   },
   {
+    // Public — reachable from the accept-privacy checkbox before login/registration.
+    path: 'privacy',
+    loadComponent: () => import('./privacy/privacy.page').then(m => m.PrivacyPage),
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',

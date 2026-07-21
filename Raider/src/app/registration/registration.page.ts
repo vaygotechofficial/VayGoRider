@@ -24,8 +24,13 @@ export class RegistrationPage {
   ) {
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
-      mobileNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]]
+      mobileNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+      acceptPrivacy: [false, [Validators.requiredTrue]]
     });
+  }
+
+  goToPrivacy() {
+    this.router.navigate(['/privacy']);
   }
 
   onSubmit() {

@@ -49,7 +49,14 @@
         <p *ngIf="registerForm.get('mobileNumber')?.errors?.['pattern']">Enter valid 10-digit mobile number</p>
       </ion-text>
 
-      <ion-button expand="block" class="btn" type="submit">
+      <label class="privacy-check">
+        <input type="checkbox" formControlName="acceptPrivacy" />
+        <span>I have read and accept the
+          <a class="link" (click)="goToPrivacy(); $event.preventDefault()">Privacy Policy</a>.
+        </span>
+      </label>
+
+      <ion-button expand="block" class="btn" type="submit" [disabled]="registerForm.invalid">
         Continue
       </ion-button>
 
