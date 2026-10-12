@@ -1,5 +1,5 @@
 ion-content {
-  --background: linear-gradient(180deg, #3b0a18, #1a050b);
+  --background: linear-gradient(180deg, #490412, #1a050b);
 }
 
 .top-logo {
@@ -63,7 +63,7 @@ ion-content {
 }
 
 .otp-box:focus {
-  border-color: #650015;
+  border-color: #490412;
   background: #fff;
   box-shadow: 0 0 0 3px rgba(101, 0, 21, 0.15);
 }
@@ -75,7 +75,7 @@ ion-content {
 }
 
 .btn {
-  --background: linear-gradient(135deg, #650015, #3b0a18);
+  --background: linear-gradient(135deg, #490412, #490412);
   --color: #fff;
   --border-radius: 12px;
   margin-top: 20px;
@@ -98,7 +98,7 @@ ion-content {
 }
 
 .resend-btn {
-  --background: linear-gradient(135deg, #650015, #3b0a18);
+  --background: linear-gradient(135deg, #490412, #490412);
   --color: #fff;
   --border-radius: 12px;
 }

@@ -739,7 +739,7 @@ export class HomePage implements OnInit, AfterViewInit, OnDestroy {
       this.directionsRenderer = new google.maps.DirectionsRenderer({
         map: this.gmap,
         suppressMarkers: true,
-        polylineOptions: { strokeColor: '#650015', strokeWeight: 4 }
+        polylineOptions: { strokeColor: '#490412', strokeWeight: 4 }
       });
     }
     ds.route({

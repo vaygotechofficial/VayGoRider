@@ -1,5 +1,5 @@
 ion-content {
-  --background: linear-gradient(180deg, #3b0a18, #1a050b);
+  --background: linear-gradient(180deg, #490412, #1a050b);
 }
 
 .screen {
@@ -102,7 +102,7 @@ ion-content {
 }
 
 .dot.pickup { background: #4caf50; }
-.dot.drop   { background: #650015; }
+.dot.drop   { background: #490412; }
 
 .ride-foot {
   display: flex;
@@ -121,7 +121,7 @@ ion-content {
 .ride-fare {
   font-size: 16px;
   font-weight: 800;
-  color: #650015;
+  color: #490412;
 }
 
 .ride-rating {

@@ -1,5 +1,5 @@
 ion-content {
-  --background: linear-gradient(180deg, #3b0a18, #1a050b);
+  --background: linear-gradient(180deg, #490412, #1a050b);
 }
 
 .screen {
@@ -158,7 +158,7 @@ ion-content {
   width: 100%;
   margin-top: 10px;
   background: rgba(101, 0, 21, 0.06);
-  color: #650015;
+  color: #490412;
   border: 1.5px solid rgba(101, 0, 21, 0.4);
   border-radius: 14px;
   padding: 11px;
@@ -183,7 +183,7 @@ ion-content {
   background: rgba(101, 0, 21, 0.06);
   border: 1px solid rgba(101, 0, 21, 0.18);
   border-radius: 14px;
-  color: #650015;
+  color: #490412;
   cursor: pointer;
 
   .ic { font-size: 22px; line-height: 1; }
@@ -217,7 +217,7 @@ ion-content {
   color: #1a050b;
   outline: none;
 
-  &:focus { border-color: #650015; }
+  &:focus { border-color: #490412; }
 }
 .otp-go {
   height: 48px;
@@ -225,7 +225,7 @@ ion-content {
   padding: 0 18px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #650015, #3b0a18);
+  background: linear-gradient(135deg, #490412, #490412);
   color: #fff;
   font-size: 14px;
   font-weight: 800;
@@ -253,7 +253,7 @@ ion-content {
 .bottom-actions .btn-primary {
   flex: 1;
   height: 46px;
-  background: linear-gradient(135deg, #650015, #3b0a18);
+  background: linear-gradient(135deg, #490412, #490412);
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -267,7 +267,7 @@ ion-content {
 .arrived-btn {
   width: 100%;
   margin-bottom: 10px;
-  background: #650015;
+  background: #490412;
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -307,7 +307,7 @@ ion-content {
   border-radius: 50%;
   border: none;
   background: #ffffff;
-  color: #3b0a18; /* VayGo maroon */
+  color: #490412; /* VayGo maroon */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -379,14 +379,14 @@ ion-content {
 .order-label {
   font-size: 11px;
   font-weight: 700;
-  color: #650015;
+  color: #490412;
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
 
 .queue-badge {
   margin-left: 6px;
-  background: #650015;
+  background: #490412;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -424,7 +424,7 @@ ion-content {
 
 /* Distinct colours so fare / pickup-approach / trip read apart at a glance */
 .stat-fare   { background: rgba(101, 0, 21, 0.08);  border: 1px solid rgba(101, 0, 21, 0.18); }
-.stat-fare   .stat-val, .stat-fare .stat-lbl   { color: #650015; }
+.stat-fare   .stat-val, .stat-fare .stat-lbl   { color: #490412; }
 
 .stat-pickup { background: rgba(224, 122, 0, 0.10); border: 1px solid rgba(224, 122, 0, 0.28); }
 .stat-pickup .stat-val, .stat-pickup .stat-lbl { color: #b35c00; }   /* amber = your approach to pickup */
@@ -445,7 +445,7 @@ ion-content {
 }
 .fare-breakdown .fb-part { font-weight: 600; }
 .fare-breakdown .fb-plus, .fare-breakdown .fb-eq { color: #999; font-weight: 700; }
-.fare-breakdown .fb-total { font-weight: 800; color: #650015; }
+.fare-breakdown .fb-total { font-weight: 800; color: #490412; }
 
 .countdown {
   position: relative;
@@ -467,7 +467,7 @@ ion-content {
 
 .ring-fill {
   fill: none;
-  stroke: #650015;
+  stroke: #490412;
   stroke-width: 3;
   stroke-dasharray: 94.2;
   stroke-linecap: round;
@@ -486,7 +486,7 @@ ion-content {
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  color: #650015;
+  color: #490412;
 }
 
 .countdown.urgent .countdown-num {
@@ -531,7 +531,7 @@ ion-content {
 
 .meta-chip {
   background: rgba(101, 0, 21, 0.07);
-  color: #650015;
+  color: #490412;
   border: 1px solid rgba(101, 0, 21, 0.18);
   border-radius: 999px;
   padding: 6px 11px;
@@ -565,7 +565,7 @@ ion-content {
   height: 50px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #650015, #3b0a18);
+  background: linear-gradient(135deg, #490412, #490412);
   color: #fff;
   font-size: 16px;
   font-weight: 700;
@@ -588,7 +588,7 @@ ion-content {
 .accept-btn {
   width: 48px; height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #650015, #3b0a18);
+  background: linear-gradient(135deg, #490412, #490412);
   border: none;
   display: flex;
   align-items: center;
@@ -604,7 +604,7 @@ ion-content {
   width: 100%;
   background: none;
   border: none;
-  color: #650015;
+  color: #490412;
   font-size: 14px;
   font-weight: 600;
   padding: 6px 0;
@@ -617,7 +617,7 @@ ion-content {
 .offline-sub  { font-size: 13px; color: #999; margin-bottom: 18px; }
 
 .go-online-btn {
-  background: linear-gradient(135deg, #650015, #3b0a18);
+  background: linear-gradient(135deg, #490412, #490412);
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -639,7 +639,7 @@ ion-content {
 .pulse-dot {
   width: 14px; height: 14px;
   border-radius: 50%;
-  background: #650015;
+  background: #490412;
   animation: pulse 1.2s infinite;
   flex-shrink: 0;
 }
@@ -677,7 +677,7 @@ ion-content {
   top: 0; left: 0; bottom: 0;
   width: 76%;
   max-width: 300px;
-  background: linear-gradient(180deg, #3b0a18, #1a050b);
+  background: linear-gradient(180deg, #490412, #1a050b);
   z-index: 50;
   transform: translateX(-105%);
   transition: transform 0.28s ease;
@@ -755,7 +755,7 @@ ion-content {
   border-radius: 12px;
   font-size: 12.5px;
   font-weight: 700;
-  color: #650015;
+  color: #490412;
   text-align: center;
 
   .otp-locked-dist { color: #8a7d80; font-weight: 600; }

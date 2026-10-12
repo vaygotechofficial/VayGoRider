@@ -1,5 +1,5 @@
 ion-content {
-  --background: linear-gradient(180deg, #3b0a18, #1a050b);
+  --background: linear-gradient(180deg, #490412, #1a050b);
 }
 
 .top-logo {
@@ -32,7 +32,7 @@ ion-content {
 }
 
 .step.active {
-  background: #650015;
+  background: #490412;
   color: #fff;
 }
 
@@ -84,14 +84,14 @@ ion-content {
 }
 
 .btn {
-  --background: linear-gradient(135deg, #650015, #3b0a18);
+  --background: linear-gradient(135deg, #490412, #490412);
   --color: #fff;
   --border-radius: 12px;
   margin-top: 15px;
 }
 
 .btn-link {
-  --background: linear-gradient(135deg, #650015, #3b0a18);
+  --background: linear-gradient(135deg, #490412, #490412);
   --color: #fff;
   --border-radius: 12px;
   margin-top: 8px;
@@ -110,12 +110,12 @@ ion-content {
     margin-top: 2px;
     width: 16px;
     height: 16px;
-    accent-color: #650015;
+    accent-color: #490412;
     flex-shrink: 0;
   }
 
   .link {
-    color: #650015;
+    color: #490412;
     font-weight: 700;
     cursor: pointer;
   }

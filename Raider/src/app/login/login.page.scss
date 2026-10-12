@@ -1,5 +1,5 @@
 .auth-bg {
-  --background: linear-gradient(180deg, #3b0a18, #1a050b);
+  --background: linear-gradient(180deg, #490412, #1a050b);
 }
 
 .auth-wrap {
@@ -62,15 +62,15 @@
   margin-bottom: 16px;
 
   .prefix {
-    color: #650015;
+    color: #490412;
     font-weight: 700;
     margin-right: 8px;
   }
 }
 
 .submit {
-  --background: linear-gradient(135deg, #650015, #3b0a18);
-  --background-activated: #3b0a18;
+  --background: linear-gradient(135deg, #490412, #490412);
+  --background-activated: #490412;
   --border-radius: 12px;
   --color: #fff;
   font-weight: 700;
@@ -92,12 +92,12 @@
     margin-top: 2px;
     width: 16px;
     height: 16px;
-    accent-color: #650015;
+    accent-color: #490412;
     flex-shrink: 0;
   }
 
   .link {
-    color: #650015;
+    color: #490412;
     font-weight: 700;
     cursor: pointer;
   }
@@ -115,7 +115,7 @@ ion-text[color="danger"] p {
   margin: 16px 0 0;
 
   .link {
-    color: #650015;
+    color: #490412;
     font-weight: 700;
     cursor: pointer;
   }

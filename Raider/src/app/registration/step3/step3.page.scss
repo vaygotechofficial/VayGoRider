@@ -1,5 +1,5 @@
 ion-content {
-  --background: linear-gradient(180deg, #3b0a18, #1a050b);
+  --background: linear-gradient(180deg, #490412, #1a050b);
 }
 
 .top-logo {
@@ -33,7 +33,7 @@ ion-content {
 }
 
 .step.active {
-  background: #650015;
+  background: #490412;
   color: #fff;
 }
 
@@ -99,7 +99,7 @@ ion-content {
 .camera-box {
   width: 100%;
   height: 160px;
-  border: 2px dashed #650015;
+  border: 2px dashed #490412;
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -127,7 +127,7 @@ ion-content {
 .camera-text {
   font-size: 14px;
   font-weight: 600;
-  color: #650015;
+  color: #490412;
 }
 
 .camera-hint {
@@ -136,7 +136,7 @@ ion-content {
 }
 
 .retake-btn {
-  --background: linear-gradient(135deg, #650015, #3b0a18);
+  --background: linear-gradient(135deg, #490412, #490412);
   --color: #fff;
   --border-radius: 12px;
   margin-top: 8px;
@@ -214,7 +214,7 @@ ion-content {
 }
 
 .btn {
-  --background: linear-gradient(135deg, #650015, #3b0a18);
+  --background: linear-gradient(135deg, #490412, #490412);
   --color: #fff;
   --border-radius: 12px;
   margin-top: 20px;
